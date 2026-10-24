@@ -765,14 +765,15 @@ def _extract_tah_strokes(
     return stroke1, stroke2, combined
 
 
-def _prune_top_serif_spurs(
+def _prune_dead_end_spurs(
     coordinates: np.ndarray,
     adjacency: list[list[int]],
     minx: float,
     maxy: float,
     scale: float,
+    max_spur_len: float = 60.0,
 ) -> tuple[np.ndarray, list[list[int]]]:
-    """Prune side serif spurs at the top of vertical masts (y > 500)."""
+    """Prune dead-end medial-axis spurs and terminal forks (Y-forks, side hooks, baseline spikes)."""
     node_count = len(coordinates)
     G = nx.Graph()
     for i in range(node_count):
@@ -784,34 +785,67 @@ def _prune_top_serif_spurs(
             if u < v:
                 G.add_edge(u, v)
 
+    # 1. Break micro-cycles (grid artifacts)
     for c in list(nx.cycle_basis(G)):
-        if len(c) <= 5:
+        if len(c) <= 6:
             G.remove_edge(c[0], c[1])
 
-    top_leaves = [n for n in G.nodes if G.degree(n) == 1 and G.nodes[n]["pos"][1] > 500.0]
-    if len(top_leaves) > 1:
-        topmost_leaf = max(top_leaves, key=lambda n: G.nodes[n]["pos"][1])
-        for leaf in top_leaves:
-            if leaf == topmost_leaf:
+    # 2. Iteratively prune dead-end spur branches
+    changed = True
+    while changed:
+        changed = False
+        degrees = dict(G.degree())
+        junctions = [n for n, d in degrees.items() if d > 2]
+        for j in junctions:
+            branches = []
+            for neighbor in list(G.neighbors(j)):
+                path = [j, neighbor]
+                curr = neighbor
+                prev = j
+                while G.degree(curr) == 2:
+                    next_nodes = [n for n in G.neighbors(curr) if n != prev]
+                    if not next_nodes:
+                        break
+                    prev = curr
+                    curr = next_nodes[0]
+                    path.append(curr)
+                if G.degree(curr) == 1:
+                    length = sum(
+                        math.dist(G.nodes[path[k]]["pos"], G.nodes[path[k - 1]]["pos"])
+                        for k in range(1, len(path))
+                    )
+                    branches.append((length, path))
+
+            if not branches:
                 continue
-            path = [leaf]
-            curr = leaf
-            while G.degree(curr) <= 2:
-                nbrs = [n for n in G.neighbors(curr) if n not in path]
-                if not nbrs:
-                    break
-                nxt = nbrs[0]
-                path.append(nxt)
-                if G.degree(nxt) > 2:
-                    break
-                curr = nxt
-            path_len = sum(
-                math.dist(G.nodes[path[i]]["pos"], G.nodes[path[i + 1]]["pos"])
-                for i in range(len(path) - 1)
-            )
-            if len(path) <= 30 or path_len < 60.0:
-                for n in path[:-1]:
-                    G.remove_node(n)
+
+            branches.sort(key=lambda b: b[0], reverse=True)
+            non_leaf = G.degree(j) - len(branches)
+
+            to_remove = []
+            if non_leaf >= 2:
+                # On main through-path: every dead-end leaf branch < max_spur_len is a spur
+                for length, path in branches:
+                    if length < max_spur_len:
+                        to_remove.append(path)
+            elif non_leaf == 1:
+                # Fork at terminal (keep the longest branch, prune shorter ones)
+                for length, path in branches[1:]:
+                    if length < max_spur_len:
+                        to_remove.append(path)
+            elif non_leaf == 0:
+                # 3-way fork (keep top 2 longest)
+                for length, path in branches[2:]:
+                    if length < max_spur_len:
+                        to_remove.append(path)
+
+            if to_remove:
+                for path in to_remove:
+                    for n in path[1:]:
+                        if n in G:
+                            G.remove_node(n)
+                changed = True
+                break
 
     node_map = {old: new for new, old in enumerate(sorted(G.nodes))}
     new_coords = coordinates[sorted(G.nodes)]
@@ -852,17 +886,11 @@ def extract_centerline(
 
     coordinates, adjacency = _skeleton_graph(skeleton)
 
-    # Prune side serif spurs at the top of vertical masts (y > 500)
-    node_count = len(coordinates)
-    if node_count > 0:
-        top_indices = [
-            i for i in range(node_count)
-            if (maxy - (coordinates[i][0] - 3) / scale) > 500.0 and len(adjacency[i]) == 1
-        ]
-        if len(top_indices) > 1:
-            coordinates, adjacency = _prune_top_serif_spurs(
-                coordinates, adjacency, minx, maxy, scale
-            )
+    # Prune side serif spurs, terminal Y-forks, and dead-end spurs
+    if len(coordinates) > 0:
+        coordinates, adjacency = _prune_dead_end_spurs(
+            coordinates, adjacency, minx, maxy, scale, max_spur_len=60.0
+        )
 
     trail = None
     if (is_loop or (char and (char in LOOP_LETTERS or (char in {"ع", "غ"} and form in {"medial"})))) and not (char == "ه" and form == "isolated"):

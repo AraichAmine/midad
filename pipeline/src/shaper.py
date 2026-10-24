@@ -368,7 +368,12 @@ def build_paw_trunk_path(
         if index == 0:
             dx = 0.0
         else:
-            dx = (prev_exit_x - bridge) - entry_pt[0]
+            prev_char = paw_letters[index - 1]
+            curr_bridge = bridge
+            # Calligraphic kashida elongation between Heh/Haa/Jeem and Reh/Zain
+            if (prev_char in {"ه", "ح", "خ", "ج"} and char in {"ر", "ز"}):
+                curr_bridge = 150.0
+            dx = (prev_exit_x - curr_bridge) - entry_pt[0]
         dy = 0.0
         letter_translations.append((dx, dy))
 
