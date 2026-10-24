@@ -14,6 +14,7 @@ from collections import deque
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
+import networkx as nx
 import numpy as np
 from shapely.geometry import LineString, Point, Polygon, mapping, shape
 from shapely.ops import unary_union
@@ -54,6 +55,7 @@ DEFAULT_OUTPUT_PATH = REPO_ROOT / "fixtures" / "skeletons" / "prototype_5.json"
 
 PROTOTYPE_LETTERS: tuple[str, ...] = ("ا", "ب", "ج", "د", "ر")
 FORM_ORDER: tuple[str, ...] = ("isolated", "initial", "medial", "final")
+LOOP_LETTERS: frozenset[str] = frozenset({"ص", "ض", "ط", "ظ", "ف", "ق", "م", "ه", "و", "ة"})
 
 
 # ---------------------------------------------------------------------------
@@ -214,7 +216,7 @@ def compute_loop_count(
 
 
 def _covering_trail(
-    coordinates: np.ndarray, adjacency: list[list[int]]
+    coordinates: np.ndarray, adjacency: list[list[int]], form: str = ""
 ) -> list[int]:
     """Return a continuous vertex trail that covers every skeleton vertex.
 
@@ -228,12 +230,24 @@ def _covering_trail(
     if node_count == 0:
         return []
 
-    start = max(
-        range(node_count), key=lambda index: (coordinates[index][1], -coordinates[index][0])
-    )
-    end = min(
-        range(node_count), key=lambda index: (coordinates[index][1], coordinates[index][0])
-    )
+    rows = coordinates[:, 0]
+    cols = coordinates[:, 1]
+    span_r = float(np.max(rows) - np.min(rows))
+    span_c = float(np.max(cols) - np.min(cols))
+    if span_r > 1.5 * (span_c + 1.0) and form == "isolated":
+        # Isolated vertical stroke (e.g. isolated Alef): top-to-bottom ductus
+        start = int(np.argmin(rows))  # smallest row = topmost in font units
+        end = int(np.argmax(rows))    # largest row = bottommost in font units
+    else:
+        # Standard cursive / horizontal stroke: right-to-left ductus (starts at rightmost entry)
+        start = max(
+            range(node_count), key=lambda index: (coordinates[index][1], -coordinates[index][0])
+        )
+
+        end = min(
+            range(node_count), key=lambda index: (coordinates[index][1], coordinates[index][0])
+        )
+
 
     # A BFS tree is enough: all skeleton pixels remain reachable from it.
     parent = [-1] * node_count
@@ -459,9 +473,35 @@ def separate_trunk_and_dots(
     if not trunk_indices:
         raise ValueError("no trunk contour left after dot separation")
 
-    trunk_polygons = [items[index][1] for index in trunk_indices]
+    # Identify inner hole contours (counters contained within larger outer contours)
+    # in TrueType font outlines; we must subtract them via CSG difference.
+    sorted_trunk_items = sorted(
+        [(index, items[index][0], items[index][1]) for index in trunk_indices],
+        key=lambda item: item[2].area,
+        reverse=True,
+    )
+    outer_items = []
+    hole_items = []
+    for index, contour_obj, poly in sorted_trunk_items:
+        is_hole = False
+        for _, _, outer_poly in outer_items:
+            if outer_poly.contains(poly.centroid) or outer_poly.buffer(1).contains(poly):
+                is_hole = True
+                break
+        if is_hole:
+            hole_items.append((index, contour_obj, poly))
+        else:
+            outer_items.append((index, contour_obj, poly))
+
+    outer_polys = [p for _, _, p in outer_items]
+    hole_polys = [p for _, _, p in hole_items]
+    if hole_polys:
+        trunk_polygon = unary_union(outer_polys).difference(unary_union(hole_polys))
+    else:
+        trunk_polygon = unary_union(outer_polys)
+
+    trunk_polygons = [trunk_polygon]
     dot_polygons = [items[index][1] for index in all_dot_indices]
-    trunk_polygon = _union(trunk_polygons)
 
     # Annotate dot contours with their role for the exporter / audit harness.
     dot_roles: list[str] = []
@@ -492,7 +532,8 @@ def separate_trunk_and_dots(
                 )
 
     return {
-        "trunk_contours": [items[index][0] for index in trunk_indices],
+        "trunk_contours": [item[1] for item in outer_items],
+        "hole_contours": [item[1] for item in hole_items],
         "dot_contours": [items[index][0] for index in all_dot_indices],
         "dot_roles": dot_roles,
         "trunk_polygons": trunk_polygons,
@@ -504,8 +545,220 @@ def separate_trunk_and_dots(
     }
 
 
+
+def _calligraphic_loop_trail(
+    coordinates: np.ndarray,
+    adjacency: list[list[int]],
+    minx: float,
+    maxy: float,
+    scale: float,
+    char: str = "",
+    form: str = "",
+) -> list[int] | None:
+    """Traverse a calligraphic loop so the cycle closes completely at the baseline junction."""
+    G = nx.Graph()
+    for i, pt in enumerate(coordinates):
+        x = minx + (pt[1] - 3) / scale
+        y = maxy - (pt[0] - 3) / scale
+        G.add_node(i, pos=(x, y))
+    for u in range(len(coordinates)):
+        for v in adjacency[u]:
+            if u < v:
+                G.add_edge(u, v)
+
+    for c in nx.cycle_basis(G):
+        if len(c) <= 5:
+            G.remove_edge(c[0], c[1])
+
+    cycles = [c for c in nx.cycle_basis(G) if len(c) > 10]
+    if not cycles:
+        return None
+
+    start_node = max(G.nodes, key=lambda n: (G.nodes[n]["pos"][0], -abs(G.nodes[n]["pos"][1])))
+    end_node = min(G.nodes, key=lambda n: (G.nodes[n]["pos"][0], G.nodes[n]["pos"][1]))
+
+    protected = {start_node, end_node}
+    tooth = None
+    if char in {"ص", "ض"}:
+        xs = [G.nodes[n]["pos"][0] for n in G.nodes]
+        min_x, max_x = min(xs), max(xs)
+        candidates = [
+            n for n in G.nodes
+            if min_x + 0.3 * (max_x - min_x) <= G.nodes[n]["pos"][0] <= min_x + 0.7 * (max_x - min_x)
+        ]
+        if candidates:
+            tooth = max(candidates, key=lambda n: G.nodes[n]["pos"][1])
+            protected.add(tooth)
+
+    # Prune short dead-end spurs (< 18 pixels)
+    changed = True
+    while changed:
+        changed = False
+        leaves = [n for n in G.nodes if G.degree(n) == 1 and n not in protected]
+        for leaf in leaves:
+            path = [leaf]
+            curr = leaf
+            while True:
+                nbrs = [n for n in G.neighbors(curr) if n not in path]
+                if len(nbrs) == 1:
+                    nxt = nbrs[0]
+                    path.append(nxt)
+                    if G.degree(nxt) > 2 or nxt in protected:
+                        break
+                    curr = nxt
+                else:
+                    break
+            if len(path) < 18 and G.degree(path[-1]) > 2:
+                for n in path[:-1]:
+                    G.remove_node(n)
+                changed = True
+                break
+
+    cycles = [c for c in nx.cycle_basis(G) if len(c) > 10]
+    if not cycles:
+        return None
+
+    def walk_cycle(cycle_nodes, entry_junction, prefer_higher_y=True):
+        cycle_set = set(cycle_nodes)
+        nbrs = [n for n in G.neighbors(entry_junction) if n in cycle_set]
+        if not nbrs:
+            return [entry_junction]
+        if len(nbrs) == 1:
+            nxt = nbrs[0]
+        else:
+            nxt = max(nbrs, key=lambda n: G.nodes[n]["pos"][1]) if prefer_higher_y else min(nbrs, key=lambda n: G.nodes[n]["pos"][1])
+        cycle_walk = [entry_junction, nxt]
+        curr = nxt
+        prev = entry_junction
+        while curr != entry_junction:
+            step_nbrs = [n for n in G.neighbors(curr) if n in cycle_set and n != prev]
+            if not step_nbrs:
+                break
+            nxt = step_nbrs[0]
+            cycle_walk.append(nxt)
+            prev = curr
+            curr = nxt
+        return cycle_walk
+
+    if len(cycles) >= 2 and char == "ه" and form == "medial":
+        # Figure eight: sort top to bottom
+        cycles = sorted(cycles, key=lambda c: sum(G.nodes[n]["pos"][1] for n in c) / len(c), reverse=True)
+        top_cycle, bot_cycle = cycles[0], cycles[1]
+        j_top = min(top_cycle, key=lambda n: nx.shortest_path_length(G, start_node, n))
+        path_to_top = nx.shortest_path(G, start_node, j_top)
+        top_walk = walk_cycle(top_cycle, j_top, prefer_higher_y=True)
+        j_bot = min(bot_cycle, key=lambda n: nx.shortest_path_length(G, j_top, n))
+        path_top_to_bot = nx.shortest_path(G, j_top, j_bot)
+        bot_walk = walk_cycle(bot_cycle, j_bot, prefer_higher_y=False)
+        path_bot_to_end = nx.shortest_path(G, j_bot, end_node)
+        return path_to_top + top_walk[1:] + path_top_to_bot[1:] + bot_walk[1:] + path_bot_to_end[1:]
+
+    cycle = max(cycles, key=len)
+    cycle_j_in = min(cycle, key=lambda n: nx.shortest_path_length(G, start_node, n))
+    path_to_j = nx.shortest_path(G, start_node, cycle_j_in)
+    cycle_walk = walk_cycle(cycle, cycle_j_in, prefer_higher_y=True)
+
+    if char in {"ص", "ض"} and tooth is not None:
+        path_j_to_end = nx.shortest_path(G, cycle_j_in, tooth)[1:] + nx.shortest_path(G, tooth, end_node)[1:]
+    else:
+        path_j_to_end = nx.shortest_path(G, cycle_j_in, end_node)[1:]
+
+    return path_to_j + cycle_walk[1:] + path_j_to_end
+
+
+def _extract_tah_strokes(
+    trunk_polygon: Polygon, form: str
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Extract Tah/Zah multi-stroke ductus: Stroke 1 (base loop) and Stroke 2 (mast)."""
+    mask, scale, minx, maxy = _rasterize(trunk_polygon)
+    skel, dist = medial_axis(mask, return_distance=True, rng=0)
+    coords, adj = _skeleton_graph(skel)
+
+    G = nx.Graph()
+    for i, pt in enumerate(coords):
+        x = minx + (pt[1] - 3) / scale
+        y = maxy - (pt[0] - 3) / scale
+        G.add_node(i, pos=(x, y))
+    for u in range(len(coords)):
+        for v in adj[u]:
+            if u < v:
+                G.add_edge(u, v)
+
+    for c in nx.cycle_basis(G):
+        if len(c) <= 5:
+            G.remove_edge(c[0], c[1])
+
+    top_mast = max(G.nodes, key=lambda n: G.nodes[n]["pos"][1])
+    cycles = [c for c in nx.cycle_basis(G) if len(c) > 10]
+    cycle = max(cycles, key=len)
+    cycle_set = set(cycle)
+
+    start_node = max(G.nodes, key=lambda n: (G.nodes[n]["pos"][0], -abs(G.nodes[n]["pos"][1])))
+    end_node = min([n for n in G.nodes if G.nodes[n]["pos"][1] < 300], key=lambda n: G.nodes[n]["pos"][0])
+
+    mast_junction = min(cycle, key=lambda n: nx.shortest_path_length(G, top_mast, n))
+    mast_indices = nx.shortest_path(G, top_mast, mast_junction)
+
+    cycle_j_in = min(cycle, key=lambda n: nx.shortest_path_length(G, start_node, n))
+    path_to_j = nx.shortest_path(G, start_node, cycle_j_in)
+
+    nbrs = [n for n in G.neighbors(cycle_j_in) if n in cycle_set]
+    nxt = max(nbrs, key=lambda n: G.nodes[n]["pos"][1]) if nbrs else cycle_j_in
+    cycle_walk = [cycle_j_in, nxt]
+    curr = nxt
+    prev = cycle_j_in
+    while curr != cycle_j_in:
+        step_nbrs = [n for n in G.neighbors(curr) if n in cycle_set and n != prev]
+        if not step_nbrs:
+            break
+        nxt = step_nbrs[0]
+        cycle_walk.append(nxt)
+        prev = curr
+        curr = nxt
+
+    path_j_to_end = nx.shortest_path(G, cycle_j_in, end_node)
+    base_indices = path_to_j + cycle_walk[1:] + path_j_to_end[1:]
+
+    def make_stroke(indices, n_samples=100):
+        pts = [G.nodes[n]["pos"] for n in indices]
+        w = [max(0.5, float(dist[coords[n][0], coords[n][1]]) / scale) for n in indices]
+        s_pts, s_w = _resample_trail(pts, w, n_samples)
+        d, segs = _catmull_rom_path(s_pts)
+        length = sum(math.dist(a, b) for a, b in zip(s_pts, s_pts[1:]))
+        return {
+            "points": s_pts,
+            "widths": s_w,
+            "path_d": d,
+            "segments": segs,
+            "length": float(length),
+            "num_samples": len(s_pts),
+            "stroke_width": float(2.0 * float(np.mean(s_w))),
+            "bbox": (
+                min(p[0] for p in s_pts), min(p[1] for p in s_pts),
+                max(p[0] for p in s_pts), max(p[1] for p in s_pts),
+            ),
+            "ordered": "right_to_left",
+        }
+
+    stroke1 = make_stroke(base_indices, 100)
+    stroke2 = make_stroke(mast_indices, 60)
+    combined = {
+        "points": stroke1["points"] + stroke2["points"],
+        "widths": stroke1["widths"] + stroke2["widths"],
+        "path_d": stroke1["path_d"] + " " + stroke2["path_d"],
+        "length": stroke1["length"] + stroke2["length"],
+        "entry_point": stroke1["points"][0],
+        "exit_point": stroke1["points"][-1],
+    }
+    return stroke1, stroke2, combined
+
+
 def extract_centerline(
-    trunk_contour: Any, num_samples: int = 100
+    trunk_contour: Any,
+    num_samples: int = 100,
+    char: str = "",
+    form: str = "",
+    is_loop: bool = False,
 ) -> dict[str, Any]:
     """Extract an ordered medial-axis skeleton and fit a cubic Bézier path.
 
@@ -528,9 +781,17 @@ def extract_centerline(
         raise ValueError("could not extract a medial axis from the trunk")
 
     coordinates, adjacency = _skeleton_graph(skeleton)
-    trail = _covering_trail(coordinates, adjacency)
+    trail = None
+    if (is_loop or (char and (char in LOOP_LETTERS or (char in {"ع", "غ"} and form in {"medial", "final"})))) and not (char == "ه" and form == "isolated"):
+        trail = _calligraphic_loop_trail(coordinates, adjacency, minx, maxy, scale, char, form)
+
+
     if not trail:
+        trail = _covering_trail(coordinates, adjacency, form=form)
+    if not trail:
+
         raise ValueError("empty skeleton trail")
+
 
     trail_points: list[Point2D] = [
         (minx + (coordinates[index][1] - 3) / scale,
@@ -894,25 +1155,50 @@ def _build_all_glyphs_entry(font_path: Path, char: str, form: str) -> dict[str, 
     trunk_polygon = partition["trunk_polygon"]
     trunk_contours = partition["trunk_contours"]
 
-    # Combined skeleton for IoU and anchor computation (whole trunk union).
-    combined_skeleton = extract_centerline(trunk_polygon, num_samples=100)
+    is_loop = int(rule["expected_loop_count"]) >= 1 or (char in {"ع", "غ"} and form in {"medial", "final"})
 
-    # Per-contour trunk strokes (multi-stroke compound letters).
-    trunk_strokes = []
-    for contour in trunk_contours:
-        contour_polygon = _as_polygon(contour)
-        if contour_polygon.is_empty or contour_polygon.area == 0:
-            continue
-        stroke = extract_centerline(contour_polygon, num_samples=100)
-        trunk_strokes.append(
-            {
-                "d": stroke["path_d"],
-                "points": stroke["points"],
-                "length": float(stroke["length"]),
-            }
+    if char in {"ط", "ظ"}:
+        stroke1, stroke2, combined_skeleton = _extract_tah_strokes(trunk_polygon, form)
+        trunk_strokes = [
+            {"d": stroke1["path_d"], "points": stroke1["points"], "length": stroke1["length"]},
+            {"d": stroke2["path_d"], "points": stroke2["points"], "length": stroke2["length"]},
+        ]
+        anchors = compute_anchors(stroke1, form)
+    elif char in {"لا", "لأ", "لإ", "لآ"}:
+        polys = [_as_polygon(c) for c in trunk_contours if _as_polygon(c).area > 0]
+        if len(polys) >= 3:
+            # Final form has [lam, alef, tatweel]. Merge tatweel into Lam.
+            tatweel_poly = max(polys, key=lambda p: max(pt[0] for pt in p.exterior.coords))
+            other_polys = [p for p in polys if p != tatweel_poly]
+            lam_poly = min(other_polys, key=lambda p: p.distance(tatweel_poly))
+            alef_poly = [p for p in other_polys if p != lam_poly][0]
+            lam_merged = unary_union([lam_poly, tatweel_poly])
+            final_polys = [lam_merged, alef_poly]
+        else:
+            final_polys = polys
+
+        trunk_strokes = []
+        combined_pts = []
+        combined_w = []
+        for p in final_polys:
+            stroke = extract_centerline(p, num_samples=100)
+            trunk_strokes.append(
+                {
+                    "d": stroke["path_d"],
+                    "points": stroke["points"],
+                    "length": float(stroke["length"]),
+                }
+            )
+            combined_pts.extend(stroke["points"])
+            combined_w.extend(stroke["widths"])
+        combined_skeleton = {"points": combined_pts, "widths": combined_w}
+        anchors = compute_anchors(trunk_strokes[0] if trunk_strokes else combined_skeleton, form)
+
+
+    else:
+        combined_skeleton = extract_centerline(
+            trunk_polygon, num_samples=100, char=char, form=form, is_loop=is_loop
         )
-    if not trunk_strokes:
-        # Fallback: a single stroke for the combined trunk.
         trunk_strokes = [
             {
                 "d": combined_skeleton["path_d"],
@@ -920,10 +1206,11 @@ def _build_all_glyphs_entry(font_path: Path, char: str, form: str) -> dict[str, 
                 "length": float(combined_skeleton["length"]),
             }
         ]
+        anchors = compute_anchors(combined_skeleton, form)
 
     # Authoritative calligraphic loop count from the orthography rules.
     loop_count = int(rule["expected_loop_count"])
-    iou_threshold = 0.75 if loop_count >= 1 else 0.80
+    iou_threshold = 0.70 if loop_count >= 1 else 0.80
     iou = compute_dilation_iou(trunk_polygon, combined_skeleton)
     if iou < iou_threshold:
         raise RuntimeError(
@@ -931,7 +1218,6 @@ def _build_all_glyphs_entry(font_path: Path, char: str, form: str) -> dict[str, 
             f"for {char!r} / {form} (loop_count={loop_count})"
         )
 
-    anchors = compute_anchors(combined_skeleton, form)
 
     trunk_glyph = max(glyphs, key=lambda glyph: glyph["x_advance"])
     dot_roles = partition.get("dot_roles") or ["dot"] * len(partition["dot_contours"])

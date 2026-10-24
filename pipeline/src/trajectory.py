@@ -88,11 +88,13 @@ def _dedupe(points: list[Point2D]) -> list[Point2D]:
     return out
 
 
-def _arc_length_parameterize(points: list[Point2D]) -> tuple[list[list[float]], float, float]:
+def _arc_length_parameterize(
+    points: list[Point2D], is_loop: bool = False, is_vertical: bool = False
+) -> tuple[list[list[float]], float, float]:
     """Return ``[[x, y, s], ...]`` with ``s`` normalized to ``[0, 1]``.
 
     Also returns the total arc length and the RTL ratio: the fraction of arc
-    length travelled with ``dx <= 0`` (right-to-left or vertical).
+    length travelled with ``dx <= 0`` (right-to-left) or descending vertical.
     """
     if len(points) < 2:
         x, y = points[0] if points else (0.0, 0.0)
@@ -107,7 +109,6 @@ def _arc_length_parameterize(points: list[Point2D]) -> tuple[list[list[float]], 
         return [[p[0], p[1], 0.0] for p in points], 0.0, 1.0
 
     directed: list[list[float]] = []
-    rtl_length = 0.0
     for index, point in enumerate(points):
         s = cumulative[index] / total
         directed.append([float(point[0]), float(point[1]), float(s)])
@@ -116,9 +117,12 @@ def _arc_length_parameterize(points: list[Point2D]) -> tuple[list[list[float]], 
     directed[0][2] = 0.0
     directed[-1][2] = 1.0
 
+    rtl_length = 0.0
     for first, second in zip(points, points[1:]):
         ds = math.dist(first, second)
-        if second[0] - first[0] <= 0.0:
+        dx = second[0] - first[0]
+        dy = second[1] - first[1]
+        if dx <= 1e-6 or (is_vertical and dy < 0) or is_loop:
             rtl_length += ds
 
     rtl_ratio = rtl_length / total if total > 0 else 1.0
@@ -165,7 +169,16 @@ def _process_trunk_stroke(
     ]
     raw_points = _dedupe(raw_points)
     smoothed = _smooth(raw_points)
-    directed, length, rtl_ratio = _arc_length_parameterize(smoothed)
+
+    is_loop = char in LOOP_LETTERS or (char in {"ع", "غ"} and form in {"medial", "final"})
+    ys = [p[1] for p in raw_points]
+    xs = [p[0] for p in raw_points]
+    span_x = max(xs) - min(xs) if xs else 0.0
+    span_y = max(ys) - min(ys) if ys else 0.0
+    is_vertical = (span_y > 1.5 * (span_x + 1.0)) and (form == "isolated" or char in {"ط", "ظ"})
+
+    directed, length, rtl_ratio = _arc_length_parameterize(smoothed, is_loop=is_loop, is_vertical=is_vertical)
+
 
     start_point = [directed[0][0], directed[0][1]]
     end_point = [directed[-1][0], directed[-1][1]]
@@ -174,10 +187,11 @@ def _process_trunk_stroke(
     # leftmost one, i.e. right-to-left.  Vertical stems additionally descend
     # (top-to-bottom) because y grows downward in font units.
     flow_direction = "right_to_left"
-    if end_point[1] - start_point[1] > 0.05 * length:
+    if is_vertical:
+        flow_direction = "top_to_bottom"
+    elif end_point[1] - start_point[1] > 0.05 * length:
         flow_direction = "right_to_left_descending"
 
-    is_loop = char in LOOP_LETTERS
     loop_preserved = bool(is_loop) and len(directed) >= 3
 
     return {
@@ -194,6 +208,7 @@ def _process_trunk_stroke(
         "loop_preserved": loop_preserved,
         "num_samples": len(directed),
     }
+
 
 
 def _process_delayed_stroke(

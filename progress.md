@@ -64,11 +64,14 @@
 - **Interactive Visual Audit Debugger**:
   - Generated `/debugger/milestone2_audit.html` (standalone 4.09 MB interactive visual inspector).
   - Features: multi-stroke color-coded ductus, role-colored delayed marks (amber=dot, red=hamza, magenta=madda, orange=inner mark), sequential drawing animation, start/end anchor rings, real-time filtering by letter/form/loop.
+- **Human-in-the-Loop Checkpoint #1**:
+  - Visually audited via `/debugger/milestone2_audit.html`.
+  - Operator approved: all loops (Sad, Dad, Tah, Zah, Ain, Ghain, Feh, Qaf, Meem, Heh, Waw, Teh Marbuta, Lam-Alef) properly connected without bisecting spikes or disconnected inner marks.
 - **Verification**:
-  - `pipeline/tests/test_day1_rules.py`: **308 passed, 10 skipped in 0.24s**
-  - `pipeline/tests/test_milestone1_topology.py`: **12 passed**
-  - `pipeline/tests/test_milestone2_kinematics.py`: **19 passed in 0.60s**
-  - Total Python test suite: **339 tests passing**.
+  - `pipeline/tests/test_day1_rules.py`: **308 passed, 10 skipped in 0.27s**
+  - `pipeline/tests/test_milestone1_topology.py`: **11 passed in 2.15s**
+  - `pipeline/tests/test_milestone2_kinematics.py`: **19 passed in 0.49s**
+  - Total Python test suite: **338 tests passing**.
 
 ---
 

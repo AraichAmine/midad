@@ -188,18 +188,26 @@ def test_points_carry_x_y_s(directed_glyphs):
 
 
 def test_each_stroke_starts_rightmost_ends_leftmost(directed_glyphs):
-    """Every individual stroke starts at its rightmost point and ends at its
-    leftmost point -- right-to-left progression per stroke."""
+    """Every horizontal stroke starts at its rightmost point and ends at its
+    leftmost point; vertical descending strokes start at their topmost point."""
     for key, glyph in directed_glyphs["glyphs"].items():
         for si, stroke in enumerate(glyph["directed_strokes"]):
             points = stroke["points"]
             xs = [p[0] for p in points]
-            assert points[0][0] >= max(xs) - 1e-6, (
-                f"{key}: stroke {si} start_x={points[0][0]} not rightmost ({max(xs)})"
-            )
-            assert points[-1][0] <= min(xs) + 1e-6, (
-                f"{key}: stroke {si} end_x={points[-1][0]} not leftmost ({min(xs)})"
-            )
+            ys = [p[1] for p in points]
+            if stroke.get("flow_direction") == "top_to_bottom":
+                assert points[0][1] >= max(ys) - 1e-6, (
+                    f"{key}: stroke {si} vertical start_y={points[0][1]} not topmost ({max(ys)})"
+                )
+            else:
+                assert points[0][0] >= max(xs) - 1e-6, (
+                    f"{key}: stroke {si} start_x={points[0][0]} not rightmost ({max(xs)})"
+                )
+                assert points[-1][0] <= min(xs) + 1e-6, (
+                    f"{key}: stroke {si} end_x={points[-1][0]} not leftmost ({min(xs)})"
+                )
+
+
 
 
 def test_aggregate_rtl_start_rightmost_end_leftmost(directed_glyphs):
