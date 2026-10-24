@@ -665,6 +665,38 @@ def _calligraphic_loop_trail(
         path_bot_to_end = nx.shortest_path(G, j_bot, end_node)
         return path_to_top + top_walk[1:] + path_top_to_bot[1:] + bot_walk[1:] + path_bot_to_end[1:]
 
+    if char == "ه" and form == "initial" and len(cycles) >= 2:
+        # Authentic initial Heh: outer descending stroke + closed teardrop loop above baseline + baseline exit
+        c_both = max(cycles, key=len)
+        h1_candidates = [c for c in cycles if len(c) < len(c_both) - 20]
+        if h1_candidates:
+            c_h1 = max(h1_candidates, key=lambda c: sum(G.nodes[n]["pos"][0] for n in c) / len(c))
+            edges_h1 = set(tuple(sorted([c_h1[i], c_h1[(i + 1) % len(c_h1)]])) for i in range(len(c_h1)))
+            edges_both = set(tuple(sorted([c_both[i], c_both[(i + 1) % len(c_both)]])) for i in range(len(c_both)))
+            edges_h0 = edges_both ^ edges_h1
+            G_h0 = nx.Graph()
+            for u, v in edges_h0:
+                G_h0.add_edge(u, v)
+            h0_cycles = list(nx.cycle_basis(G_h0))
+            if h0_cycles:
+                c_h0 = max(h0_cycles, key=len)
+                outer_branch = [n for n in c_h1 if G.nodes[n]["pos"][0] > 480 and G.nodes[n]["pos"][1] > 300]
+                top_outer = max(outer_branch, key=lambda n: G.nodes[n]["pos"][1]) if outer_branch else max(c_h1, key=lambda n: (G.nodes[n]["pos"][1], G.nodes[n]["pos"][0]))
+                j_bottom = min([n for n in c_h0 if G.nodes[n]["pos"][0] > 400], key=lambda n: G.nodes[n]["pos"][1])
+                max_x_node = max(c_h1, key=lambda n: G.nodes[n]["pos"][0])
+
+                p1_a = nx.shortest_path(G, top_outer, max_x_node)
+                p1_b = nx.shortest_path(G, max_x_node, j_bottom)
+                p1 = p1_a + p1_b[1:]
+
+                idx = c_h0.index(j_bottom)
+                c_walk = c_h0[idx:] + c_h0[:idx] + [j_bottom]
+                if G.nodes[c_walk[1]]["pos"][1] < G.nodes[c_walk[-2]]["pos"][1]:
+                    c_walk = [j_bottom] + c_walk[1:-1][::-1] + [j_bottom]
+
+                p3 = nx.shortest_path(G, j_bottom, end_node)
+                return p1 + c_walk[1:] + p3[1:]
+
     cycle = max(cycles, key=len)
     cycle_j_in = min(cycle, key=lambda n: nx.shortest_path_length(G, start_node, n))
     path_to_j = nx.shortest_path(G, start_node, cycle_j_in)

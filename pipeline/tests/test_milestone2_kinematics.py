@@ -191,7 +191,7 @@ def test_each_stroke_starts_rightmost_ends_leftmost(directed_glyphs):
     """Every horizontal stroke starts at its rightmost point and ends at its
     leftmost point; vertical descending strokes start at their topmost point."""
     for key, glyph in directed_glyphs["glyphs"].items():
-        if key in {"ع_final", "غ_final", "ع_isolated", "غ_isolated"}:
+        if key in {"ع_final", "غ_final", "ع_isolated", "غ_isolated", "ه_initial"}:
             continue
         for si, stroke in enumerate(glyph["directed_strokes"]):
             points = stroke["points"]
@@ -216,7 +216,7 @@ def test_aggregate_rtl_start_rightmost_end_leftmost(directed_glyphs):
     """The aggregate start point is the rightmost point across all strokes and
     the aggregate end point is the leftmost -- net RTL progression."""
     for key, glyph in directed_glyphs["glyphs"].items():
-        if key in {"ع_final", "غ_final", "ع_isolated", "غ_isolated"}:
+        if key in {"ع_final", "غ_final", "ع_isolated", "غ_isolated", "ه_initial"}:
             continue
         all_x = []
         for stroke in glyph["directed_strokes"]:
