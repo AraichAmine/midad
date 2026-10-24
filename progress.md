@@ -79,6 +79,11 @@
 - **HarfBuzz Cursive Layout Bridge (`pipeline/src/shaper.py`)**:
   - Implemented HarfBuzz shaping integration with glyph advance, offset mapping, and contextual form determination (isolated, initial, medial, final) + ligatures (Lam-Alif).
   - Decomposes words into Pieces of Arabic Words (PAWs) based on non-connecting letter boundaries (`ا`, `أ`, `إ`, `آ`, `د`, `ذ`, `ر`, `ز`, `و`, `ء`) and whitespace.
+  - **Spatial RTL Layout & Anchor Translation Engine**:
+    - Letters within each PAW advance horizontally right-to-left: letter $i$ translated by running offset $dx_i = x_{\text{prev\_exit}} - x_{\text{entry}, i}$, ensuring natural spacing with zero glyph stacking.
+    - Subsequent PAWs positioned with calligraphic bounding-box spacing (`PAW_GAP = 80.0`).
+    - Entire word normalized with leftmost coordinate anchored at canvas $x = 50.0$.
+    - Secondary upright strokes (e.g., Tah/Zah masts, Lam-Alef diagonals) translated consistently and scheduled as secondary strokes.
 - **Cursive Baseline Welder**:
   - Welds sequential letters within each PAW using tangent-aligned cubic Bézier fillets bridging letter $i$'s exit anchor to letter $i+1$'s entry anchor.
   - Mathematical Invariants Enforced & Passed:
@@ -86,16 +91,16 @@
     - **$C^0$ Positional Continuity**: $\Delta = 0.0000$ font units (strict threshold $< 0.05$).
     - **$G^1$ Tangent Angle Continuity**: $\Delta \theta = 0.00^\circ$ (strict threshold $< 12^\circ$).
 - **Delayed-Stroke Scheduling**:
-  - All delayed marks (dots, hamza, madda, kaf mark) translated to absolute canvas coordinates.
+  - All delayed marks (dots, hamza, madda, kaf mark) translated to absolute canvas coordinates matching their parent glyphs.
   - Enforces 100% temporal causality: all delayed marks begin strictly after their parent PAW baseline completes drawing.
 - **50-Word Canonical Corpus**:
   - Exported golden fixture: `fixtures/golden/welded_50_words.json` (50 unique words, 94 PAW baselines, 153 delayed strokes).
 - **Interactive Visual Debugger**:
-  - Created `/debugger/milestone3_joints.html` (standalone 1.35 MB interactive visual inspector).
-  - Displays: welded PAW baselines, green glowing $C^0/G^1$ joint markers, role-colored delayed marks, sequential handwriting animation scrubber, and search filters.
+  - Created `/debugger/milestone3_joints.html` (standalone 1.39 MB interactive visual inspector).
+  - Displays: spatially spaced welded PAW baselines, green glowing $C^0/G^1$ joint markers, role-colored delayed marks, sequential handwriting animation scrubber, and search filters.
 - **Verification**:
-  - `pipeline/tests/test_milestone3_welding.py`: **5 passed in 0.45s**
-  - Consolidated Python test suite: **332 passed, 10 skipped in 1.20s**.
+  - `pipeline/tests/test_milestone3_welding.py`: **5 passed in 0.52s**
+  - Consolidated Python test suite: **344 passed, 10 skipped in 31.15s**.
 
 ---
 
