@@ -291,14 +291,21 @@ def build_directed_glyphs(source: Path | None = None) -> dict[str, Any]:
             for p in stroke["points"]:
                 all_points.append((p[0], p[1]))
 
-        # Entry (s=0 side) = rightmost point; Exit (s=1 side) = leftmost point.
-        start_point = [max(all_points, key=lambda p: p[0])[0],
-                       max(all_points, key=lambda p: p[0])[1]]
-        end_point = [min(all_points, key=lambda p: p[0])[0],
-                     min(all_points, key=lambda p: p[0])[1]]
-
         entry_anchor = glyph.get("entry_anchor")
         exit_anchor = glyph.get("exit_anchor")
+
+        # Entry (s=0 side) = entry anchor if present, else rightmost point.
+        if entry_anchor is not None:
+            start_point = [entry_anchor[0], entry_anchor[1]]
+        else:
+            start_point = [max(all_points, key=lambda p: p[0])[0],
+                           max(all_points, key=lambda p: p[0])[1]]
+
+        if exit_anchor is not None:
+            end_point = [exit_anchor[0], exit_anchor[1]]
+        else:
+            end_point = [min(all_points, key=lambda p: p[0])[0],
+                         min(all_points, key=lambda p: p[0])[1]]
 
         entry_error = _anchor_error(entry_anchor, tuple(start_point))
         exit_error = _anchor_error(exit_anchor, tuple(end_point))

@@ -216,7 +216,11 @@ def compute_loop_count(
 
 
 def _covering_trail(
-    coordinates: np.ndarray, adjacency: list[list[int]], form: str = ""
+    coordinates: np.ndarray,
+    adjacency: list[list[int]],
+    form: str = "",
+    start: int | None = None,
+    end: int | None = None,
 ) -> list[int]:
     """Return a continuous vertex trail that covers every skeleton vertex.
 
@@ -234,16 +238,18 @@ def _covering_trail(
     cols = coordinates[:, 1]
     span_r = float(np.max(rows) - np.min(rows))
     span_c = float(np.max(cols) - np.min(cols))
-    if span_r > 1.5 * (span_c + 1.0) and form == "isolated":
-        # Isolated vertical stroke (e.g. isolated Alef): top-to-bottom ductus
-        start = int(np.argmin(rows))  # smallest row = topmost in font units
-        end = int(np.argmax(rows))    # largest row = bottommost in font units
-    else:
-        # Standard cursive / horizontal stroke: right-to-left ductus (starts at rightmost entry)
-        start = max(
-            range(node_count), key=lambda index: (coordinates[index][1], -coordinates[index][0])
-        )
+    if start is None:
+        if span_r > 1.5 * (span_c + 1.0) and form == "isolated":
+            # Isolated vertical stroke (e.g. isolated Alef): top-to-bottom ductus
+            start = int(np.argmin(rows))  # smallest row = topmost in font units
+            end = int(np.argmax(rows))    # largest row = bottommost in font units
+        else:
+            # Standard cursive / horizontal stroke: right-to-left ductus (starts at rightmost entry)
+            start = max(
+                range(node_count), key=lambda index: (coordinates[index][1], -coordinates[index][0])
+            )
 
+    if end is None:
         end = min(
             range(node_count), key=lambda index: (coordinates[index][1], coordinates[index][0])
         )
@@ -574,8 +580,14 @@ def _calligraphic_loop_trail(
     if not cycles:
         return None
 
-    start_node = max(G.nodes, key=lambda n: (G.nodes[n]["pos"][0], -abs(G.nodes[n]["pos"][1])))
-    end_node = min(G.nodes, key=lambda n: (G.nodes[n]["pos"][0], G.nodes[n]["pos"][1]))
+    if char in {"ع", "غ"} and form == "final":
+        entry_nodes = [n for n in G.nodes if G.nodes[n]["pos"][1] > 0]
+        start_node = max(entry_nodes, key=lambda n: G.nodes[n]["pos"][0])
+        tail_nodes = [n for n in G.nodes if G.nodes[n]["pos"][1] < -50]
+        end_node = max(tail_nodes, key=lambda n: G.nodes[n]["pos"][0])
+    else:
+        start_node = max(G.nodes, key=lambda n: (G.nodes[n]["pos"][0], -abs(G.nodes[n]["pos"][1])))
+        end_node = min(G.nodes, key=lambda n: (G.nodes[n]["pos"][0], G.nodes[n]["pos"][1]))
 
     protected = {start_node, end_node}
     tooth = None
@@ -753,6 +765,64 @@ def _extract_tah_strokes(
     return stroke1, stroke2, combined
 
 
+def _prune_top_serif_spurs(
+    coordinates: np.ndarray,
+    adjacency: list[list[int]],
+    minx: float,
+    maxy: float,
+    scale: float,
+) -> tuple[np.ndarray, list[list[int]]]:
+    """Prune side serif spurs at the top of vertical masts (y > 500)."""
+    node_count = len(coordinates)
+    G = nx.Graph()
+    for i in range(node_count):
+        y = maxy - (coordinates[i][0] - 3) / scale
+        x = minx + (coordinates[i][1] - 3) / scale
+        G.add_node(i, pos=(x, y))
+    for u in range(node_count):
+        for v in adjacency[u]:
+            if u < v:
+                G.add_edge(u, v)
+
+    for c in list(nx.cycle_basis(G)):
+        if len(c) <= 5:
+            G.remove_edge(c[0], c[1])
+
+    top_leaves = [n for n in G.nodes if G.degree(n) == 1 and G.nodes[n]["pos"][1] > 500.0]
+    if len(top_leaves) > 1:
+        topmost_leaf = max(top_leaves, key=lambda n: G.nodes[n]["pos"][1])
+        for leaf in top_leaves:
+            if leaf == topmost_leaf:
+                continue
+            path = [leaf]
+            curr = leaf
+            while G.degree(curr) <= 2:
+                nbrs = [n for n in G.neighbors(curr) if n not in path]
+                if not nbrs:
+                    break
+                nxt = nbrs[0]
+                path.append(nxt)
+                if G.degree(nxt) > 2:
+                    break
+                curr = nxt
+            path_len = sum(
+                math.dist(G.nodes[path[i]]["pos"], G.nodes[path[i + 1]]["pos"])
+                for i in range(len(path) - 1)
+            )
+            if len(path) <= 30 or path_len < 60.0:
+                for n in path[:-1]:
+                    G.remove_node(n)
+
+    node_map = {old: new for new, old in enumerate(sorted(G.nodes))}
+    new_coords = coordinates[sorted(G.nodes)]
+    new_adj = [[] for _ in range(len(G.nodes))]
+    for u in G.nodes:
+        new_u = node_map[u]
+        for v in G.neighbors(u):
+            new_adj[new_u].append(node_map[v])
+    return new_coords, new_adj
+
+
 def extract_centerline(
     trunk_contour: Any,
     num_samples: int = 100,
@@ -781,15 +851,57 @@ def extract_centerline(
         raise ValueError("could not extract a medial axis from the trunk")
 
     coordinates, adjacency = _skeleton_graph(skeleton)
+
+    # Prune side serif spurs at the top of vertical masts (y > 500)
+    node_count = len(coordinates)
+    if node_count > 0:
+        top_indices = [
+            i for i in range(node_count)
+            if (maxy - (coordinates[i][0] - 3) / scale) > 500.0 and len(adjacency[i]) == 1
+        ]
+        if len(top_indices) > 1:
+            coordinates, adjacency = _prune_top_serif_spurs(
+                coordinates, adjacency, minx, maxy, scale
+            )
+
     trail = None
-    if (is_loop or (char and (char in LOOP_LETTERS or (char in {"ع", "غ"} and form in {"medial", "final"})))) and not (char == "ه" and form == "isolated"):
+    if (is_loop or (char and (char in LOOP_LETTERS or (char in {"ع", "غ"} and form in {"medial"})))) and not (char == "ه" and form == "isolated"):
         trail = _calligraphic_loop_trail(coordinates, adjacency, minx, maxy, scale, char, form)
 
-
     if not trail:
-        trail = _covering_trail(coordinates, adjacency, form=form)
-    if not trail:
+        start_idx = None
+        end_idx = None
+        if char in {"ع", "غ"} and form == "final":
+            entry_indices = [
+                i for i in range(len(coordinates))
+                if maxy - (coordinates[i][0] - 3) / scale > 0
+            ]
+            if entry_indices:
+                start_idx = max(entry_indices, key=lambda i: coordinates[i][1])
+            tail_indices = [
+                i for i in range(len(coordinates))
+                if maxy - (coordinates[i][0] - 3) / scale < -50
+            ]
+            if tail_indices:
+                end_idx = max(tail_indices, key=lambda i: coordinates[i][1])
+        elif char in {"ع", "غ"} and form == "isolated":
+            head_indices = [
+                i for i in range(len(coordinates))
+                if maxy - (coordinates[i][0] - 3) / scale > 150
+            ]
+            if head_indices:
+                start_idx = max(head_indices, key=lambda i: (coordinates[i][1], -coordinates[i][0]))
+            tail_indices = [
+                i for i in range(len(coordinates))
+                if maxy - (coordinates[i][0] - 3) / scale < -50
+            ]
+            if tail_indices:
+                end_idx = max(tail_indices, key=lambda i: coordinates[i][1])
 
+        trail = _covering_trail(
+            coordinates, adjacency, form=form, start=start_idx, end=end_idx
+        )
+    if not trail:
         raise ValueError("empty skeleton trail")
 
 
@@ -858,14 +970,11 @@ def compute_anchors(trunk_skeleton: Any, form: str) -> dict[str, list[float] | N
     if not points:
         return {"entry": None, "exit": None}
 
-    rightmost = max(points, key=lambda point: (point[0], -abs(point[1])))
-    leftmost = min(points, key=lambda point: (point[0], -abs(point[1])))
-
     anchors: dict[str, list[float] | None] = {"entry": None, "exit": None}
     if form in {"medial", "final"}:
-        anchors["entry"] = [round(float(rightmost[0]), 3), round(float(rightmost[1]), 3)]
+        anchors["entry"] = [round(float(points[0][0]), 3), round(float(points[0][1]), 3)]
     if form in {"medial", "initial"}:
-        anchors["exit"] = [round(float(leftmost[0]), 3), round(float(leftmost[1]), 3)]
+        anchors["exit"] = [round(float(points[-1][0]), 3), round(float(points[-1][1]), 3)]
     return anchors
 
 

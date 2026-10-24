@@ -259,7 +259,9 @@ def clean_and_align_stroke(
     if len(pts) < 8:
         return pts
 
-    # 1. Prune exit hook if moving right or looping
+    Y_BASE = 40.0
+
+    # 1. Prune exit hook if moving right or diverging away from baseline
     if is_initial or is_medial:
         last_n = min(15, len(pts))
         min_x_idx = len(pts) - 1
@@ -270,7 +272,15 @@ def clean_and_align_stroke(
         if min_x_idx < len(pts) - 1:
             pts = pts[: min_x_idx + 1]
 
-    # 2. Prune entry hook if moving right
+        search_window = min(15, len(pts))
+        candidates = list(range(len(pts) - search_window, len(pts)))
+        base_cands = [i for i in candidates if 0.0 <= pts[i][1] <= 80.0]
+        if base_cands:
+            best_idx = min(base_cands, key=lambda i: abs(pts[i][1] - Y_BASE))
+            if abs(pts[-1][1] - Y_BASE) > abs(pts[best_idx][1] - Y_BASE) + 5.0:
+                pts = pts[: best_idx + 1]
+
+    # 2. Prune entry hook if moving right or diverging away from baseline
     if is_medial or is_final:
         first_n = min(15, len(pts))
         max_x_idx = 0
@@ -280,6 +290,14 @@ def clean_and_align_stroke(
                 break
         if max_x_idx > 0:
             pts = pts[max_x_idx:]
+
+        search_window = min(15, len(pts))
+        candidates = list(range(0, search_window))
+        base_cands = [i for i in candidates if 0.0 <= pts[i][1] <= 80.0]
+        if base_cands:
+            best_idx = min(base_cands, key=lambda i: abs(pts[i][1] - Y_BASE))
+            if abs(pts[0][1] - Y_BASE) > abs(pts[best_idx][1] - Y_BASE) + 5.0:
+                pts = pts[best_idx:]
 
     # 3. Align endpoint tangents to strictly horizontal (-1, 0)
     if is_initial or is_medial:
