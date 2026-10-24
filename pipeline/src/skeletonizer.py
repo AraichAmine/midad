@@ -40,6 +40,11 @@ try:  # pragma: no cover
 except ImportError:  # pragma: no cover
     from rules import ARABIC_CHARACTER_RULES  # type: ignore
 
+try:  # pragma: no cover - import style depends on how the module is loaded
+    from . import extractor
+except ImportError:  # pragma: no cover
+    import extractor  # type: ignore
+
 
 Point2D = tuple[float, float]
 
@@ -160,6 +165,52 @@ def _skeleton_graph(
                 if neighbor is not None:
                     adjacency[index].append(neighbor)
     return coordinates, adjacency
+
+
+def compute_loop_count(
+    coordinates: np.ndarray, adjacency: list[list[int]]
+) -> int:
+    """Topological loop count (cycle rank) of a skeleton graph.
+
+    For an undirected graph the cycle rank is ``E - V + C`` where ``V`` is the
+    number of vertices, ``E`` the number of (de-duplicated) edges and ``C`` the
+    number of connected components.  A connected skeleton that is a plain tree
+    has a loop count of 0; each independent cycle (e.g. a closed calligraphic
+    bowl) adds one.
+
+    The value is a *structural* signal: the authoritative calligraphic loop
+    count for a letter comes from the orthography rules
+    (``expected_loop_count``), because a near-closed calligraphic bowl need not
+    correspond to a polygon hole and the 8-connected medial axis can contain
+    sub-pixel spurious cycles.
+    """
+
+    node_count = len(coordinates)
+    if node_count == 0:
+        return 0
+
+    edges: set[tuple[int, int]] = set()
+    for u in range(node_count):
+        for v in adjacency[u]:
+            if u < v:
+                edges.add((u, v))
+
+    visited = [False] * node_count
+    components = 0
+    for start in range(node_count):
+        if visited[start]:
+            continue
+        components += 1
+        stack = [start]
+        visited[start] = True
+        while stack:
+            node = stack.pop()
+            for neighbor in adjacency[node]:
+                if not visited[neighbor]:
+                    visited[neighbor] = True
+                    stack.append(neighbor)
+
+    return len(edges) - node_count + components
 
 
 def _covering_trail(
@@ -718,6 +769,147 @@ def generate_prototype_5_json(
 
     target = Path(output_path) if output_path is not None else DEFAULT_OUTPUT_PATH
     data = build_prototype_data(font_path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    with target.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, ensure_ascii=False, indent=2)
+        handle.write("\n")
+    return target
+
+
+# ---------------------------------------------------------------------------
+# Full-catalog export (MILESTONE 1)
+# ---------------------------------------------------------------------------
+
+
+def _font_rel_path(font_path: Path) -> str:
+    if font_path.is_relative_to(REPO_ROOT):
+        return str(font_path.relative_to(REPO_ROOT))
+    return str(font_path)
+
+
+def _shaped_records(
+    font_path: Path, char: str, form: str
+) -> tuple[list[dict[str, Any]], list[Any]]:
+    """Shaped glyph records and positioned contours for one letter/ligature form.
+
+    Ligatures (``لا``, ``لأ``, ...) are multi-character keys, so they cannot be
+    shaped through :func:`extractor.shape_letter_form` (single character only).
+    They are shaped directly with a tatweel lead-in for the joined form.
+    """
+
+    if len(char) == 1:
+        shaped = extractor.shape_letter_form(font_path, char, form)
+        contours = extractor.contours_for_letter_form(font_path, char, form)
+        return shaped["glyphs"], contours
+
+    text = char if form == "isolated" else "\u0640" + char
+    glyphs = extractor.shape_text(text, font_path)
+    contours = extractor.extract_text_contours(font_path, text)
+    return glyphs, contours
+
+
+def _contour_stroke(contour: Any) -> dict[str, Any]:
+    """A minimal stroke dict for a single contour (used for delayed/dot strokes)."""
+
+    points = [[round(float(x), 3), round(float(y), 3)] for x, y in contour.points]
+    length = 0.0
+    for first, second in zip(contour.points, contour.points[1:] + contour.points[:1]):
+        length += math.dist(first, second)
+    return {
+        "d": contour.path_d,
+        "points": points,
+        "length": round(float(length), 3),
+    }
+
+
+def _build_all_glyphs_entry(font_path: Path, char: str, form: str) -> dict[str, Any]:
+    """Build one all_glyphs catalog entry for a letter/ligature presentation form."""
+
+    rule = ARABIC_CHARACTER_RULES[char]
+    glyphs, contours = _shaped_records(font_path, char, form)
+    partition = separate_trunk_and_dots(
+        contours, rule["dot_count"], rule["dot_placement"]
+    )
+    trunk_polygon = partition["trunk_polygon"]
+
+    skeleton = extract_centerline(trunk_polygon, num_samples=100)
+
+    # Authoritative calligraphic loop count from the orthography rules.
+    loop_count = int(rule["expected_loop_count"])
+    iou_threshold = 0.75 if loop_count >= 1 else 0.80
+    iou = compute_dilation_iou(trunk_polygon, skeleton)
+    if iou < iou_threshold:
+        raise RuntimeError(
+            f"dilation IoU {iou:.3f} below threshold {iou_threshold:.2f} "
+            f"for {char!r} / {form} (loop_count={loop_count})"
+        )
+
+    anchors = compute_anchors(skeleton, form)
+
+    trunk_glyph = max(glyphs, key=lambda glyph: glyph["x_advance"])
+    delayed_strokes = [_contour_stroke(c) for c in partition["dot_contours"]]
+
+    return {
+        "char": char,
+        "name": rule["name"],
+        "form": form,
+        "glyph_id": int(trunk_glyph["glyph_id"]),
+        "glyph_name": trunk_glyph["glyph_name"],
+        "advance_x": float(trunk_glyph["x_advance"]),
+        "entry_anchor": anchors["entry"],
+        "exit_anchor": anchors["exit"],
+        "loop_count": loop_count,
+        "expected_loop_count": loop_count,
+        "dilation_iou": round(float(iou), 4),
+        "joining_type": rule["joining_type"],
+        "base_unicode": rule["base_unicode"],
+        "dot_count": int(rule["dot_count"]),
+        "dot_placement": rule["dot_placement"],
+        "actual_dot_count": int(partition["actual_dot_count"]),
+        "trunk_strokes": [
+            {
+                "d": skeleton["path_d"],
+                "points": skeleton["points"],
+                "length": float(skeleton["length"]),
+            }
+        ],
+        "delayed_strokes": delayed_strokes,
+    }
+
+
+def build_all_glyphs_data(font_path: str | Path | None = None) -> dict[str, Any]:
+    """Build the full all_glyphs catalog across every character rule and form."""
+
+    font_path = Path(font_path) if font_path is not None else DEFAULT_FONT_PATH
+    if not font_path.is_file():
+        raise FileNotFoundError(f"font not found: {font_path}")
+
+    glyphs: dict[str, Any] = {}
+    for char in ARABIC_CHARACTER_RULES:
+        for form in _valid_forms(char):
+            key = f"{char}_{form}"
+            glyphs[key] = _build_all_glyphs_entry(font_path, char, form)
+
+    return {
+        "font": _font_rel_path(font_path),
+        "font_family": "Noto Naskh Arabic",
+        "font_units_per_em": font_units_per_em(font_path),
+        "total_glyphs": len(glyphs),
+        "glyphs": glyphs,
+    }
+
+
+DEFAULT_ALL_GLYPHS_PATH = REPO_ROOT / "fixtures" / "skeletons" / "all_glyphs.json"
+
+
+def generate_all_glyphs_json(
+    output_path: str | Path | None = None,
+    font_path: str | Path | None = None,
+) -> Path:
+    """Generate ``fixtures/skeletons/all_glyphs.json`` and return its path."""
+
+    target = Path(output_path) if output_path is not None else DEFAULT_ALL_GLYPHS_PATH
+    data = build_all_glyphs_data(font_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("w", encoding="utf-8") as handle:
         json.dump(data, handle, ensure_ascii=False, indent=2)
