@@ -165,6 +165,7 @@ def test_all_iou_values_are_reproducible(all_glyphs, font_path):
             contours,
             rules.ARABIC_CHARACTER_RULES[char]["dot_count"],
             rules.ARABIC_CHARACTER_RULES[char]["dot_placement"],
+            rules.ARABIC_CHARACTER_RULES[char],
         )
         trunk = partition["trunk_polygon"]
         # Recompute with local widths, exactly as _build_all_glyphs_entry does.

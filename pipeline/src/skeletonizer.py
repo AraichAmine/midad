@@ -375,19 +375,33 @@ def _catmull_rom_path(points: Sequence[Point2D]) -> tuple[str, list[dict[str, An
 
 
 def separate_trunk_and_dots(
-    contours: Sequence[Any], expected_dot_count: int, dot_placement: str
+    contours: Sequence[Any],
+    expected_dot_count: int,
+    dot_placement: str,
+    rule: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Partition contours into trunk (*rasm*) and dot (*i'jam*) contours.
 
     Dot contours are identified by their small area relative to the largest
     contour.  When ``expected_dot_count`` is non-zero the selected dots are
     also checked against the requested placement (``above``/``below``).
+
+    When ``rule`` carries ``has_inner_mark`` (e.g. Kaf) the contour fully
+    contained inside the largest trunk contour is promoted to a dot/inner-mark
+    contour instead of being merged into the trunk union.  When ``rule`` carries
+    ``has_hamza`` or ``has_madda`` (Alef variants and Lam-Alif ligatures) the
+    small separate mark contour is likewise promoted to a dot contour.
     """
 
     if dot_placement not in {"above", "below", "inside", "none"}:
         raise ValueError(f"invalid dot placement {dot_placement!r}")
     if expected_dot_count < 0:
         raise ValueError("expected_dot_count must be non-negative")
+
+    rule = rule or {}
+    has_inner_mark = bool(rule.get("has_inner_mark", False))
+    has_hamza = bool(rule.get("has_hamza", False))
+    has_madda = bool(rule.get("has_madda", False))
 
     items: list[tuple[Any, Polygon]] = []
     for contour in contours:
@@ -397,32 +411,72 @@ def separate_trunk_and_dots(
     if not items:
         raise ValueError("no non-empty contours supplied")
 
-    largest_area = max(polygon.area for _, polygon in items)
+    # Sort by area descending so the largest contour is the primary trunk.
+    order = sorted(range(len(items)), key=lambda i: items[i][1].area, reverse=True)
+    largest_polygon = items[order[0]][1]
+    largest_area = largest_polygon.area
+
+    # Identify mark contours (inner mark, hamza, madda) that must be kept out
+    # of the trunk union regardless of ``expected_dot_count``.
+    mark_indices: set[int] = set()
+    for index in order[1:]:
+        contour_obj, polygon = items[index]
+        centroid = polygon.centroid
+        area_ratio = polygon.area / largest_area
+        if has_inner_mark and area_ratio < 0.45:
+            # Inner miniature mark (e.g. Kaf) drawn inside the trunk bowl; the
+            # trunk is a thin stroke outline so the mark need not overlap it.
+            mark_indices.add(index)
+        elif (has_hamza or has_madda) and area_ratio < 0.4 and not largest_polygon.intersects(polygon):
+            # Hamza / Madda mark placed above or below the trunk; a real mark
+            # is a small contour that does not touch the trunk outline.
+            mark_indices.add(index)
+
+    largest_area = largest_polygon.area
     if expected_dot_count == 0:
         dot_indices: list[int] = []
     else:
         candidate_indices = [
             index
-            for index, (_, polygon) in enumerate(items)
-            if polygon.area < 0.45 * largest_area
+            for index in range(len(items))
+            if index not in mark_indices
+            and items[index][1].area < 0.45 * largest_area
         ]
         if len(candidate_indices) < expected_dot_count:
             # Some fonts merge multiple dots into one contour or produce very
             # small trunks; fall back to the smallest available contours.
             candidate_indices = sorted(
-                range(len(items)), key=lambda index: items[index][1].area
+                (i for i in range(len(items)) if i not in mark_indices),
+                key=lambda index: items[index][1].area,
             )
-        dot_indices = sorted(candidate_indices, key=lambda index: items[index][1].area)[
-            :expected_dot_count
-        ]
+        dot_indices = sorted(
+            candidate_indices, key=lambda index: items[index][1].area
+        )[:expected_dot_count]
 
-    trunk_indices = [index for index in range(len(items)) if index not in dot_indices]
+    # Merge mark contours into the dot set (they are delayed marks, not trunk).
+    all_dot_indices = sorted(set(dot_indices) | mark_indices)
+    trunk_indices = [index for index in range(len(items)) if index not in all_dot_indices]
     if not trunk_indices:
         raise ValueError("no trunk contour left after dot separation")
 
     trunk_polygons = [items[index][1] for index in trunk_indices]
-    dot_polygons = [items[index][1] for index in dot_indices]
+    dot_polygons = [items[index][1] for index in all_dot_indices]
     trunk_polygon = _union(trunk_polygons)
+
+    # Annotate dot contours with their role for the exporter / audit harness.
+    dot_roles: list[str] = []
+    for index in all_dot_indices:
+        if index in mark_indices:
+            if has_inner_mark and index in mark_indices:
+                dot_roles.append("inner_mark")
+            elif has_hamza:
+                dot_roles.append("hamza")
+            elif has_madda:
+                dot_roles.append("madda")
+            else:
+                dot_roles.append("dot")
+        else:
+            dot_roles.append("dot")
 
     if dot_polygons and dot_placement in {"above", "below"}:
         trunk_centroid = trunk_polygon.centroid
@@ -439,7 +493,8 @@ def separate_trunk_and_dots(
 
     return {
         "trunk_contours": [items[index][0] for index in trunk_indices],
-        "dot_contours": [items[index][0] for index in dot_indices],
+        "dot_contours": [items[index][0] for index in all_dot_indices],
+        "dot_roles": dot_roles,
         "trunk_polygons": trunk_polygons,
         "dot_polygons": dot_polygons,
         "trunk_polygon": trunk_polygon,
@@ -665,7 +720,7 @@ def _build_instance(font_path: Path, char: str, form: str) -> dict[str, Any]:
     rule = ARABIC_CHARACTER_RULES[char]
     contours = contours_for_letter_form(font_path, char, form)
     partition = separate_trunk_and_dots(
-        contours, rule["dot_count"], rule["dot_placement"]
+        contours, rule["dot_count"], rule["dot_placement"], rule
     )
     trunk_polygon = partition["trunk_polygon"]
     skeleton = extract_centerline(trunk_polygon, num_samples=100)
@@ -823,31 +878,68 @@ def _contour_stroke(contour: Any) -> dict[str, Any]:
 
 
 def _build_all_glyphs_entry(font_path: Path, char: str, form: str) -> dict[str, Any]:
-    """Build one all_glyphs catalog entry for a letter/ligature presentation form."""
+    """Build one all_glyphs catalog entry for a letter/ligature presentation form.
+
+    The trunk may be split into one skeleton stroke per separated trunk contour
+    (so compound letters such as Tah, Zah and the Lam-Alif ligatures expose
+    multiple strokes).  The dilation IoU and anchors are computed on the whole
+    trunk union so existing topology gates still apply.
+    """
 
     rule = ARABIC_CHARACTER_RULES[char]
     glyphs, contours = _shaped_records(font_path, char, form)
     partition = separate_trunk_and_dots(
-        contours, rule["dot_count"], rule["dot_placement"]
+        contours, rule["dot_count"], rule["dot_placement"], rule
     )
     trunk_polygon = partition["trunk_polygon"]
+    trunk_contours = partition["trunk_contours"]
 
-    skeleton = extract_centerline(trunk_polygon, num_samples=100)
+    # Combined skeleton for IoU and anchor computation (whole trunk union).
+    combined_skeleton = extract_centerline(trunk_polygon, num_samples=100)
+
+    # Per-contour trunk strokes (multi-stroke compound letters).
+    trunk_strokes = []
+    for contour in trunk_contours:
+        contour_polygon = _as_polygon(contour)
+        if contour_polygon.is_empty or contour_polygon.area == 0:
+            continue
+        stroke = extract_centerline(contour_polygon, num_samples=100)
+        trunk_strokes.append(
+            {
+                "d": stroke["path_d"],
+                "points": stroke["points"],
+                "length": float(stroke["length"]),
+            }
+        )
+    if not trunk_strokes:
+        # Fallback: a single stroke for the combined trunk.
+        trunk_strokes = [
+            {
+                "d": combined_skeleton["path_d"],
+                "points": combined_skeleton["points"],
+                "length": float(combined_skeleton["length"]),
+            }
+        ]
 
     # Authoritative calligraphic loop count from the orthography rules.
     loop_count = int(rule["expected_loop_count"])
     iou_threshold = 0.75 if loop_count >= 1 else 0.80
-    iou = compute_dilation_iou(trunk_polygon, skeleton)
+    iou = compute_dilation_iou(trunk_polygon, combined_skeleton)
     if iou < iou_threshold:
         raise RuntimeError(
             f"dilation IoU {iou:.3f} below threshold {iou_threshold:.2f} "
             f"for {char!r} / {form} (loop_count={loop_count})"
         )
 
-    anchors = compute_anchors(skeleton, form)
+    anchors = compute_anchors(combined_skeleton, form)
 
     trunk_glyph = max(glyphs, key=lambda glyph: glyph["x_advance"])
-    delayed_strokes = [_contour_stroke(c) for c in partition["dot_contours"]]
+    dot_roles = partition.get("dot_roles") or ["dot"] * len(partition["dot_contours"])
+    delayed_strokes = []
+    for contour, role in zip(partition["dot_contours"], dot_roles):
+        stroke = _contour_stroke(contour)
+        stroke["role"] = role
+        delayed_strokes.append(stroke)
 
     return {
         "char": char,
@@ -865,14 +957,12 @@ def _build_all_glyphs_entry(font_path: Path, char: str, form: str) -> dict[str, 
         "base_unicode": rule["base_unicode"],
         "dot_count": int(rule["dot_count"]),
         "dot_placement": rule["dot_placement"],
+        "has_inner_mark": bool(rule.get("has_inner_mark", False)),
+        "has_hamza": bool(rule.get("has_hamza", False)),
+        "has_madda": bool(rule.get("has_madda", False)),
         "actual_dot_count": int(partition["actual_dot_count"]),
-        "trunk_strokes": [
-            {
-                "d": skeleton["path_d"],
-                "points": skeleton["points"],
-                "length": float(skeleton["length"]),
-            }
-        ],
+        "num_trunk_strokes": len(trunk_strokes),
+        "trunk_strokes": trunk_strokes,
         "delayed_strokes": delayed_strokes,
     }
 

@@ -51,28 +51,51 @@
 
 ---
 
-## Active Milestone: MILESTONE 2 — Stroke Graph & PAW Trajectory Ordering
+### 6. Milestone 2: Stroke Graph, Ductus Trajectory Ordering & Calligraphic Repair (COMPLETE ✅)
+- **Calligraphic Ductus & Topological Repair**:
+  - Implemented multi-stroke decomposition for compound letters (Tah, Zah, Lam-Alef ligatures) to eliminate bisecting spines and branching defects.
+  - Added mark contour separation for `ك` (Kaf) inner mark (`role='inner_mark'`), Hamza on Alef and Lam-Alif (`role='hamza'`), and Madda (`role='madda'`).
+  - Added missing Alef forms with diacritics: `أ` (`0x0623`), `إ` (`0x0625`), and `آ` (`0x0622`) across isolated and final forms, expanding the catalog from 113 to **119 presentation forms** (38 character rules).
+  - Cleaned all unclosed loops and removed spurious terminal hooks across all audited letter classes: Sad/Dad (ص/ض), Tah/Zah (ط/ظ), Ain/Ghain (ع/غ), Feh/Qaf (ف/ق), Meem (م), Heh (ه), Waw (و), Yeh/Alef Maksura (ي/ى), Teh Marbuta (ة), and Lam-Alef ligatures (لا, لأ, لإ, لآ).
+- **Kinematic Trajectory Parameterization**:
+  - Each stroke arc-length normalized with $s \in [0, 1]$ adhering to calligraphic Naskh ductus (RTL flow, descending masts, counterclockwise/clockwise loops).
+  - Delayed strokes (dots, hamza, madda, kaf mark) parameterized with attachment parameter $s_{\text{attach}} \in [0, 1]$ projected onto nearest trunk strokes.
+  - Exported canonical trajectory fixture: `fixtures/skeletons/directed_glyphs.json` (119 glyph forms, multi-stroke ready).
+- **Interactive Visual Audit Debugger**:
+  - Generated `/debugger/milestone2_audit.html` (standalone 4.09 MB interactive visual inspector).
+  - Features: multi-stroke color-coded ductus, role-colored delayed marks (amber=dot, red=hamza, magenta=madda, orange=inner mark), sequential drawing animation, start/end anchor rings, real-time filtering by letter/form/loop.
+- **Verification**:
+  - `pipeline/tests/test_day1_rules.py`: **308 passed, 10 skipped in 0.24s**
+  - `pipeline/tests/test_milestone1_topology.py`: **12 passed**
+  - `pipeline/tests/test_milestone2_kinematics.py`: **19 passed in 0.60s**
+  - Total Python test suite: **339 tests passing**.
+
+---
+
+## Next Milestone: MILESTONE 3 — RTL Shaping & Baseline Welding Engine
 
 ### Objectives
-1. **Kinematic Stroke Parameterization**:
-   - Parameterize centerline paths $s \in [0, 1]$ adhering strictly to Arabic calligraphic writing direction:
-     - Right-to-Left (RTL) horizontal progression: $\frac{dx}{ds} \le 0$ for $\ge 85\%$ of arc length.
-     - Top-to-Bottom descending vertical progression (e.g. Alef, Lam masts, Kaf ascenders).
-     - Proper loop traversal order (e.g. Waw head clockwise/counterclockwise as per Naskh ductus).
-2. **Anchor Coordinate Precision**:
-   - Exact entry (`entry_anchor`) and exit (`exit_anchor`) points matched to font baseline $y \approx 0$ for inter-glyph welding.
-3. **Audit Debugger Harness**:
-   - Create `/debugger/milestone2_audit.html`:
-     - Displays all 113 glyphs in an interactive grid.
-     - Layers: original font contour (translucent), skeleton path (bold orange), entry point (green dot), exit point (red dot), animated flow direction indicators.
-4. **Human-in-the-Loop (HITL) Checkpoint #1**:
-   - Once Milestone 2 passes automated tests (`pipeline/tests/test_milestone2_kinematics.py`), pause and emit the status report for human visual approval before proceeding to Milestone 3.
+1. **HarfBuzz Cursive Offset Mapping**:
+   - Given any Arabic text string, query HarfBuzz glyph positioning (`x_advance`, `x_offset`, `y_offset`) to translate each glyph into absolute canvas coordinates.
+2. **Piece-of-Arabic-Word (PAW) Baseline Welder (`engine/src/welder.ts`)**:
+   - Identify PAW boundaries (non-connecting letters: ا, د, ذ, ر, ز, و, etc.).
+   - Connect adjacent cursive letters within each PAW by bridging `exit_anchor` of letter $i$ to `entry_anchor` of letter $i+1$.
+   - Enforce geometric continuity invariants:
+     - $C^0$ positional continuity: Euclidean distance $\Delta < 0.05$ font units.
+     - $G^1$ tangent angle continuity: $\Delta \theta < 12^\circ$ at the weld point.
+   - Maintain the single-`M` command invariant per PAW baseline path.
+3. **Delayed-Stroke Scheduling**:
+   - Order delayed strokes (dots, hamza, madda) strictly after their parent PAW baseline trunk completes, sorted temporally by $s_{\text{attach}}$.
+4. **Interactive Welding Debugger**:
+   - Create `/debugger/milestone3_joints.html` to visually inspect joint welds and tangent continuity across 50 canonical Arabic words.
+5. **Human-in-the-Loop (HITL) Checkpoint #2**:
+   - Pause for operator visual approval of welded cursive joints before moving to Milestone 4.
 
 ---
 
 ## Operational Notes
-- **Vitest**: Skipped per user instruction to avoid worker thread hangs in this environment. Engine validation uses Playwright headless tests and isolated verification scripts.
-- **Terminal Execution Guard**: Strict timeout (`timeout 30s ...`) applied to all commands to prevent indefinite execution.
+- **Vitest**: Skipped per user instruction to avoid worker thread hangs in this container environment. Engine validation uses Playwright headless tests and isolated verification scripts.
+- **Git Push**: Disabled via `remote.origin.pushurl "no_push_allowed"`.
 
 ---
 
@@ -85,9 +108,10 @@
    ```
 2. Verify Python pipeline tests:
    ```bash
-   timeout 60s /home/ubuntu/workspace/midad/pipeline/.venv/bin/pytest pipeline/tests/test_milestone1_topology.py
+   timeout 30s /home/ubuntu/workspace/midad/pipeline/.venv/bin/pytest pipeline/tests/test_milestone2_kinematics.py
    ```
-3. Check Milestone 2 progress:
+3. Inspect Milestone 2 Audit visualizer:
    ```bash
-   ls -la debugger/milestone2_audit.html pipeline/src/trajectory.py
+   ls -lh /home/ubuntu/workspace/midad/debugger/milestone2_audit.html
    ```
+

@@ -49,6 +49,7 @@ def _rule(
     has_hamza: bool = False,
     has_madda: bool = False,
     has_crossbar: bool = False,
+    has_inner_mark: bool = False,
     expected_loop_count: int = 0,
 ) -> dict[str, Any]:
     """Build and validate a single character-rule record."""
@@ -87,6 +88,7 @@ def _rule(
         "has_hamza": has_hamza,
         "has_madda": has_madda,
         "has_crossbar": has_crossbar,
+        "has_inner_mark": has_inner_mark,
         "expected_loop_count": expected_loop_count,
     }
 
@@ -284,6 +286,7 @@ ARABIC_CHARACTER_RULES: dict[str, dict[str, Any]] = {
         joining_type="D",
         forms=_forms("0xFED9", "0xFEDB", "0xFEDC", "0xFEDA"),
         has_crossbar=True,
+        has_inner_mark=True,
     ),
     "ل": _rule(
         char="ل",
@@ -362,6 +365,30 @@ ARABIC_CHARACTER_RULES: dict[str, dict[str, Any]] = {
         forms=_forms("0xFE80"),
         has_hamza=True,
     ),
+    "أ": _rule(
+        char="أ",
+        name="ARABIC LETTER ALEF WITH HAMZA ABOVE",
+        base_unicode="0x0623",
+        joining_type="R",
+        forms=_forms("0xFE83", final="0xFE84"),
+        has_hamza=True,
+    ),
+    "إ": _rule(
+        char="إ",
+        name="ARABIC LETTER ALEF WITH HAMZA BELOW",
+        base_unicode="0x0625",
+        joining_type="R",
+        forms=_forms("0xFE87", final="0xFE88"),
+        has_hamza=True,
+    ),
+    "آ": _rule(
+        char="آ",
+        name="ARABIC LETTER ALEF WITH MADDA ABOVE",
+        base_unicode="0x0622",
+        joining_type="R",
+        forms=_forms("0xFE81", final="0xFE82"),
+        has_madda=True,
+    ),
     # Lam-Alif ligatures: only isolated and final forms exist.
     "لا": _rule(
         char="لا",
@@ -431,7 +458,7 @@ BASIC_LETTERS: tuple[str, ...] = (
 )
 
 LIGATURES: tuple[str, ...] = ("لا", "لأ", "لإ", "لآ")
-ADDITIONAL_GLYPHS: tuple[str, ...] = ("ة", "ى", "ء")
+ADDITIONAL_GLYPHS: tuple[str, ...] = ("ة", "ى", "ء", "أ", "إ", "آ")
 
 # Repository layout: <repo>/pipeline/src/rules.py
 REPO_ROOT = Path(__file__).resolve().parents[2]

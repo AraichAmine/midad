@@ -33,6 +33,7 @@ REQUIRED_FIELDS = {
     "has_hamza",
     "has_madda",
     "has_crossbar",
+    "has_inner_mark",
     "expected_loop_count",
 }
 
@@ -69,7 +70,7 @@ BASIC_LETTERS = (
     "ي",
 )
 
-ADDITIONAL_GLYPHS = ("ة", "ى", "ء")
+ADDITIONAL_GLYPHS = ("ة", "ى", "ء", "أ", "إ", "آ")
 LIGATURES = ("لا", "لأ", "لإ", "لآ")
 
 # Independent ground truth: (base unicode, joining type, dot count, dot placement)
@@ -105,6 +106,9 @@ EXPECTED_ORTHOGRAPHY = {
     "ة": ("0x0629", "R", 2, "above"),
     "ى": ("0x0649", "R", 0, "none"),
     "ء": ("0x0621", "U", 0, "none"),
+    "أ": ("0x0623", "R", 0, "none"),
+    "إ": ("0x0625", "R", 0, "none"),
+    "آ": ("0x0622", "R", 0, "none"),
     "لا": ("0xFEFB", "R", 0, "none"),
     "لأ": ("0xFEF7", "R", 0, "none"),
     "لإ": ("0xFEF9", "R", 0, "none"),
@@ -125,8 +129,8 @@ EXPECTED_LOOP_COUNTS = {
 }
 
 EXPECTED_CROSSBARS = {"ط", "ظ", "ك"}
-EXPECTED_HAMZA = {"ء", "لأ", "لإ"}
-EXPECTED_MADDA = {"لآ"}
+EXPECTED_HAMZA = {"ء", "أ", "إ", "لأ", "لإ"}
+EXPECTED_MADDA = {"آ", "لآ"}
 
 
 # ---------------------------------------------------------------------------

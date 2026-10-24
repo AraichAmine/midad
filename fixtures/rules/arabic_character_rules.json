@@ -15,6 +15,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ب": {
@@ -33,6 +34,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ت": {
@@ -51,6 +53,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ث": {
@@ -69,6 +72,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ج": {
@@ -87,6 +91,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ح": {
@@ -105,6 +110,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "خ": {
@@ -123,6 +129,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "د": {
@@ -141,6 +148,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ذ": {
@@ -159,6 +167,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ر": {
@@ -177,6 +186,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ز": {
@@ -195,6 +205,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "س": {
@@ -213,6 +224,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ش": {
@@ -231,6 +243,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ص": {
@@ -249,6 +262,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ض": {
@@ -267,6 +281,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ط": {
@@ -285,6 +300,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": true,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ظ": {
@@ -303,6 +319,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": true,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ع": {
@@ -321,6 +338,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "غ": {
@@ -339,6 +357,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ف": {
@@ -357,6 +376,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ق": {
@@ -375,6 +395,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ك": {
@@ -393,6 +414,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": true,
+    "has_inner_mark": true,
     "expected_loop_count": 0
   },
   "ل": {
@@ -411,6 +433,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "م": {
@@ -429,6 +452,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ن": {
@@ -447,6 +471,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ه": {
@@ -465,6 +490,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "و": {
@@ -483,6 +509,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ي": {
@@ -501,6 +528,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ة": {
@@ -519,6 +547,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 1
   },
   "ى": {
@@ -537,6 +566,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "ء": {
@@ -555,6 +585,64 @@
     "has_hamza": true,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
+    "expected_loop_count": 0
+  },
+  "أ": {
+    "char": "أ",
+    "name": "ARABIC LETTER ALEF WITH HAMZA ABOVE",
+    "base_unicode": "0x0623",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFE83",
+      "initial": null,
+      "medial": null,
+      "final": "0xFE84"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": true,
+    "has_madda": false,
+    "has_crossbar": false,
+    "has_inner_mark": false,
+    "expected_loop_count": 0
+  },
+  "إ": {
+    "char": "إ",
+    "name": "ARABIC LETTER ALEF WITH HAMZA BELOW",
+    "base_unicode": "0x0625",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFE87",
+      "initial": null,
+      "medial": null,
+      "final": "0xFE88"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": true,
+    "has_madda": false,
+    "has_crossbar": false,
+    "has_inner_mark": false,
+    "expected_loop_count": 0
+  },
+  "آ": {
+    "char": "آ",
+    "name": "ARABIC LETTER ALEF WITH MADDA ABOVE",
+    "base_unicode": "0x0622",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFE81",
+      "initial": null,
+      "medial": null,
+      "final": "0xFE82"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": true,
+    "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "لا": {
@@ -573,6 +661,7 @@
     "has_hamza": false,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "لأ": {
@@ -591,6 +680,7 @@
     "has_hamza": true,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "لإ": {
@@ -609,6 +699,7 @@
     "has_hamza": true,
     "has_madda": false,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   },
   "لآ": {
@@ -627,6 +718,7 @@
     "has_hamza": false,
     "has_madda": true,
     "has_crossbar": false,
+    "has_inner_mark": false,
     "expected_loop_count": 0
   }
 }
