@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
+import re
 from typing import Any
 
 # Make pipeline/src importable when this module is run directly.
@@ -186,38 +187,24 @@ def determine_form(
     char: str,
     index: int,
     paw: list[str],
-    rule: dict[str, Any],
+    rule: dict[str, Any] | None = None,
 ) -> str:
-    """Determine the positional form of ``char`` within its PAW."""
+    """Determine the positional form of ``char`` within its PAW.
 
-    joining = rule["joining_type"]
+    In Arabic script, every PAW is a connected cursive sequence:
+    - n == 1: isolated
+    - index == 0: initial
+    - index == n - 1: final
+    - middle letters (0 < index < n - 1): medial
+    """
     n = len(paw)
-
-    # Non-joining (U) letters are always isolated.
-    if joining == "U":
-        return "isolated"
-
-    # Single-letter PAW -> isolated.
     if n == 1:
         return "isolated"
-
-    # Right-joining (R) letters: initial if followed by a connector, else
-    # final (they never take medial).
-    if joining == "R":
-        if index < n - 1:
-            return "initial"
-        return "final"
-
-    # Dual-joining (D) letters.
-    prev_connects = index > 0 and not is_non_connecting(paw[index - 1])
-    next_connects = index < n - 1 and not is_non_connecting(paw[index + 1])
-    if prev_connects and next_connects:
-        return "medial"
-    if prev_connects:
-        return "final"
-    if next_connects:
+    if index == 0:
         return "initial"
-    return "isolated"
+    if index == n - 1:
+        return "final"
+    return "medial"
 
 
 # ---------------------------------------------------------------------------
@@ -246,7 +233,7 @@ def get_directed_glyph(
 def _stroke_tangent(points: list[list[float]], at: str = "end") -> tuple[float, float]:
     """Estimate the unit tangent vector at the start or end of a stroke."""
     if len(points) < 2:
-        return 1.0, 0.0
+        return -1.0, 0.0
     if at == "end":
         p0 = points[-2]
         p1 = points[-1]
@@ -265,21 +252,32 @@ def build_paw_trunk_path(
     paw_letters: list[str],
     catalog: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
-    """Build a single continuous trunk path for one PAW.
+    """Build a single continuous trunk path for one PAW with spatial letter placement.
 
-    Returns a dict with:
-      - ``d``: SVG path data (single ``M``, then ``L``/``C`` segments).
-      - ``length``: total path length in font units.
-      - ``start_point`` / ``end_point``: PAW extremes.
+    Letters are placed right-to-left: each letter is translated so its entry anchor
+    horizontally meets the previous letter's exit anchor, with a tangent-aligned
+    cubic Bézier bridging any vertical transition at the baseline.
     """
 
     if not paw_letters:
-        return {"d": "", "length": 0.0, "start_point": None, "end_point": None}
+        return {
+            "d": "",
+            "length": 0.0,
+            "start_point": None,
+            "end_point": None,
+            "letter_translations": [],
+            "secondary_strokes": [],
+        }
 
     commands: list[str] = []
     total_length = 0.0
-    current_point: tuple[float, float] | None = None
+    letter_translations: list[tuple[float, float]] = []
+    secondary_strokes: list[dict[str, Any]] = []
+
+    prev_exit_x: float | None = None
+    prev_exit_y: float | None = None
     prev_exit_tangent: tuple[float, float] | None = None
+    current_point: tuple[float, float] | None = None
 
     for index, char in enumerate(paw_letters):
         rule = get_rule(char)
@@ -291,47 +289,67 @@ def build_paw_trunk_path(
             )
 
         strokes = glyph["trunk_strokes"]
-        pts = strokes[0]["points"]
-        stroke_start = (float(pts[0][0]), float(pts[0][1]))
-        stroke_end = (float(pts[-1][0]), float(pts[-1][1]))
-        exit_tangent = _stroke_tangent(pts, at="end")
+        s0_pts = strokes[0]["points"]
+        entry = glyph.get("entry_anchor")
+        exit_a = glyph.get("exit_anchor")
 
-        if current_point is None:
-            # First letter of the PAW: start a fresh subpath.
+        entry_pt = entry if entry else s0_pts[0]
+        exit_pt = exit_a if exit_a else s0_pts[-1]
+
+        if index == 0:
+            dx = 0.0
+        else:
+            dx = prev_exit_x - entry_pt[0]
+        dy = 0.0
+        letter_translations.append((dx, dy))
+
+        shifted_s0 = [[p[0] + dx, p[1] + dy] for p in s0_pts]
+        stroke_start = (shifted_s0[0][0], shifted_s0[0][1])
+        stroke_end = (shifted_s0[-1][0], shifted_s0[-1][1])
+
+        p0, p1 = shifted_s0[0], shifted_s0[1]
+        entry_tangent = _unit(p1[0] - p0[0], p1[1] - p0[1])
+        p_penult, p_last = shifted_s0[-2], shifted_s0[-1]
+        exit_tangent = _unit(p_last[0] - p_penult[0], p_last[1] - p_penult[1])
+
+        # Preserve secondary strokes (e.g., Tah upright mast)
+        for sec_stroke in strokes[1:]:
+            sec_shifted = [[p[0] + dx, p[1] + dy] for p in sec_stroke["points"]]
+            secondary_strokes.append(
+                {
+                    "role": "secondary",
+                    "points": sec_shifted,
+                    "length": float(sec_stroke.get("length", 100.0)),
+                }
+            )
+
+        if index == 0:
             commands.append(f"M {stroke_start[0]:.4f} {stroke_start[1]:.4f}")
             current_point = stroke_start
         else:
-            # Weld from previous letter's end to this letter's start.
-            prev_end = current_point
-            entry_tangent = _stroke_tangent(pts, at="start")
-            # Outgoing tangent of the PREVIOUS letter at its exit (prev_end).
-            exit_t = prev_exit_tangent if prev_exit_tangent is not None else exit_tangent
+            prev_end = (prev_exit_x, prev_exit_y)
             gap = _dist(prev_end, stroke_start)
-            if gap > 1e-6:
-                c1x, c1y, c2x, c2y, ex, ey = _weld_cubic(
-                    prev_end, exit_t, stroke_start, entry_tangent, gap
-                )
+            if gap > 1e-4:
+                # Tangent-matched cubic Bézier along writing ductus
+                t0 = prev_exit_tangent if prev_exit_tangent is not None else (-1.0, 0.0)
+                t1 = entry_tangent
+                w = min(0.35 * gap, 40.0)
+                c1 = (prev_end[0] + t0[0] * w, prev_end[1] + t0[1] * w)
+                c2 = (stroke_start[0] - t1[0] * w, stroke_start[1] - t1[1] * w)
                 commands.append(
-                    f"C {c1x:.4f} {c1y:.4f} {c2x:.4f} {c2y:.4f} {ex:.4f} {ey:.4f}"
+                    f"C {c1[0]:.4f} {c1[1]:.4f} {c2[0]:.4f} {c2[1]:.4f} {stroke_start[0]:.4f} {stroke_start[1]:.4f}"
                 )
-                total_length += _dist(prev_end, (c1x, c1y))
-                total_length += _dist((c1x, c1y), (c2x, c2y))
-                total_length += _dist((c2x, c2y), (ex, ey))
+                total_length += gap
             current_point = stroke_start
 
-        # Emit this letter's trunk stroke.  Translate so the first point
-        # coincides exactly with current_point (already set by M or weld).
-        dx = current_point[0] - pts[0][0]
-        dy = current_point[1] - pts[0][1]
-        prev_px = current_point[0]
-        prev_py = current_point[1]
-        for p in pts[1:]:
-            px = float(p[0]) + dx
-            py = float(p[1]) + dy
+        for p in shifted_s0[1:]:
+            px, py = p[0], p[1]
             commands.append(f"L {px:.4f} {py:.4f}")
-            total_length += _dist((prev_px, prev_py), (px, py))
-            prev_px, prev_py = px, py
-        current_point = (prev_px, prev_py)
+            total_length += math.hypot(px - current_point[0], py - current_point[1])
+            current_point = (px, py)
+
+        prev_exit_x = exit_pt[0] + dx
+        prev_exit_y = exit_pt[1] + dy
         prev_exit_tangent = exit_tangent
 
     d = " ".join(commands)
@@ -345,6 +363,8 @@ def build_paw_trunk_path(
         if commands
         else None,
         "end_point": current_point,
+        "letter_translations": letter_translations,
+        "secondary_strokes": secondary_strokes,
     }
 
 
@@ -362,7 +382,6 @@ def translate_path_d(d: str, dx: float, dy: float) -> str:
             out.append(tok.upper())
             i += 1
             continue
-        # number (x)
         x = float(tok) + dx
         y = float(tokens[i + 1]) + dy
         out.append(f"{x:.4f}")
@@ -416,52 +435,110 @@ def shape_word(
     text: str,
     catalog: dict[str, dict[str, Any]],
 ) -> dict[str, Any]:
-    """Shape one Arabic word into PAWs with welded trunks and delayed marks."""
+    """Shape one Arabic word into spatially placed PAWs with welded trunks and delayed marks."""
 
     paws = partition_paws(text)
-    paw_records: list[dict[str, Any]] = []
-    timeline_items: list[dict[str, Any]] = []
+    paw_data_list = []
 
-    cursor_x = 0.0  # running canvas x offset across PAWs (RTL: move left)
-    time_cursor = 0.0
-
+    # 1. Build local PAWs with intra-PAW spatial placement
     for paw_index, paw_letters in enumerate(paws):
         paw_id = f"paw_{paw_index}"
-        trunk = build_paw_trunk_path(paw_letters, catalog)
+        trunk_res = build_paw_trunk_path(paw_letters, catalog)
 
-        # Translate the whole PAW trunk so it sits at the PAW cursor x.
-        trunk_d = translate_path_d(trunk["d"], cursor_x, 0.0)
-
-        # Build delayed strokes for this PAW (one per letter, offset by cursor_x).
         delayed_records: list[dict[str, Any]] = []
         for index, char in enumerate(paw_letters):
-            rule = get_rule(char)
-            form = determine_form(char, index, paw_letters, rule)
-            glyph = get_directed_glyph(catalog, char, form)
-            if glyph is None:
-                continue
-            for delayed in glyph["delayed_strokes"]:
+            form = determine_form(char, index, paw_letters)
+            glyph = catalog[f"{char}_{form}"]
+            dx, dy = trunk_res["letter_translations"][index]
+            for ds in glyph["delayed_strokes"]:
                 delayed_records.append(
-                    position_delayed_stroke(delayed, cursor_x, 0.0)
+                    position_delayed_stroke(ds, dx, dy)
                 )
 
-        # Timing: trunk draws first, then delayed marks.
-        trunk_duration = max(1.0, trunk["length"] / 200.0)
-        trunk_start = time_cursor
-        trunk_end = time_cursor + trunk_duration
+        # Include secondary strokes (e.g. Tah upright mast)
+        for sec in trunk_res["secondary_strokes"]:
+            delayed_records.append(
+                {
+                    "role": "secondary",
+                    "attachment_s": 0.5,
+                    "attachment_point": sec["points"][0],
+                    "centroid": sec["points"][0],
+                    "points": sec["points"],
+                    "length": sec["length"],
+                }
+            )
+
+        # Local bounding box
+        xs: list[float] = []
+        tokens = re.findall(r"[-+]?\d*\.?\d+", trunk_res["d"])
+        for k in range(0, len(tokens) - 1, 2):
+            xs.append(float(tokens[k]))
+        for ds in delayed_records:
+            for p in ds["points"]:
+                xs.append(float(p[0]))
+
+        paw_data_list.append(
+            {
+                "paw_id": paw_id,
+                "letters": "".join(paw_letters),
+                "trunk_d": trunk_res["d"],
+                "trunk_length": trunk_res["length"],
+                "delayed_records": delayed_records,
+                "minx": min(xs) if xs else 0.0,
+                "maxx": max(xs) if xs else 0.0,
+            }
+        )
+
+    # 2. Position PAWs horizontally (RTL progression)
+    PAW_GAP = 80.0
+    current_left = 0.0
+    for idx, pdata in enumerate(paw_data_list):
+        if idx == 0:
+            shift_x = 0.0
+        else:
+            # Place rightmost point of this PAW to the left of the previous PAW
+            shift_x = (current_left - PAW_GAP) - pdata["maxx"]
+
+        pdata["shift_x"] = shift_x
+        pdata["global_minx"] = pdata["minx"] + shift_x
+        pdata["global_maxx"] = pdata["maxx"] + shift_x
+        current_left = pdata["global_minx"]
+
+    # 3. Global normalization: shift entire word so leftmost point is at x = 50.0
+    global_min_x = min(p["global_minx"] for p in paw_data_list)
+    norm_shift = 50.0 - global_min_x
+
+    final_paws = []
+    timeline_items = []
+    time_cursor = 0.0
+
+    for pdata in paw_data_list:
+        total_shift = pdata["shift_x"] + norm_shift
+        trunk_d_norm = translate_path_d(pdata["trunk_d"], total_shift, 0.0)
+
+        del_norm = []
+        for ds in pdata["delayed_records"]:
+            del_norm.append(position_delayed_stroke(ds, total_shift, 0.0))
+
+        # Causal Timeline: trunk completes first, then delayed marks
+        paw_id = pdata["paw_id"]
+        trunk_dur = max(1.0, pdata["trunk_length"] / 200.0)
+        t_start = time_cursor
+        t_end = time_cursor + trunk_dur
         timeline_items.append(
             {
                 "strokeId": f"{paw_id}_trunk",
                 "pawId": paw_id,
                 "type": "trunk",
-                "startTime": round(trunk_start, 4),
-                "endTime": round(trunk_end, 4),
+                "startTime": round(t_start, 4),
+                "endTime": round(t_end, 4),
             }
         )
-        time_cursor = trunk_end
-        for mi, delayed in enumerate(delayed_records):
+        time_cursor = t_end
+
+        for mi, ds in enumerate(del_norm):
             ds_start = time_cursor
-            ds_end = time_cursor + max(0.4, delayed["length"] / 400.0)
+            ds_end = time_cursor + max(0.4, ds["length"] / 400.0)
             timeline_items.append(
                 {
                     "strokeId": f"{paw_id}_delayed_{mi}",
@@ -473,27 +550,29 @@ def shape_word(
             )
             time_cursor = ds_end
 
-        cursor_x -= 40.0  # PAW gap (move left for next PAW)
+        tokens = re.findall(r"[-+]?\d*\.?\d+", trunk_d_norm)
+        start_pt = [float(tokens[0]), float(tokens[1])]
+        end_pt = [float(tokens[-2]), float(tokens[-1])]
 
-        paw_records.append(
+        final_paws.append(
             {
                 "id": paw_id,
-                "letters": "".join(paw_letters),
+                "letters": pdata["letters"],
                 "trunkStroke": {
                     "id": f"{paw_id}_trunk",
-                    "d": trunk_d,
-                    "length": trunk["length"],
+                    "d": trunk_d_norm,
+                    "length": round(pdata["trunk_length"], 4),
                     "type": "trunk",
-                    "startPoint": trunk["start_point"],
-                    "endPoint": trunk["end_point"],
+                    "startPoint": start_pt,
+                    "endPoint": end_pt,
                 },
-                "delayedStrokes": delayed_records,
+                "delayedStrokes": del_norm,
             }
         )
 
     return {
         "text": text,
-        "paws": paw_records,
+        "paws": final_paws,
         "timeline": {
             "paws": [
                 {
@@ -501,7 +580,7 @@ def shape_word(
                     "trunkStroke": p["trunkStroke"],
                     "delayedStrokes": p["delayedStrokes"],
                 }
-                for p in paw_records
+                for p in final_paws
             ],
             "items": timeline_items,
             "totalDuration": round(time_cursor, 4),
