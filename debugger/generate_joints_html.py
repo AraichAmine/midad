@@ -347,10 +347,8 @@ def generate_html():
       overflow: visible;
     }}
 
-    /* Transformed coordinates: Noto Naskh has y-up, SVG standard has y-down */
     .viewport-group {{
-      transform: scaleY(-1);
-      transform-origin: center;
+      /* y-flip handled via SVG viewBox and transform */
     }}
 
     path.trunk {{
@@ -502,8 +500,9 @@ def generate_html():
         card.dataset.index = wordIdx;
 
         const [minx, miny, width, height] = w.vb;
+        const maxy = miny + height;
         // Invert Y axis for font coordinates (y-up in fonts vs y-down in SVG)
-        const svgViewBox = `${{minx}} ${{miny}} ${{width}} ${{height}}`;
+        const svgViewBox = `${{minx}} ${{-maxy}} ${{width}} ${{height}}`;
 
         let pathsHtml = '';
         // 1. Render Welded PAW trunks
@@ -542,7 +541,7 @@ def generate_html():
           </div>
           <div class="canvas-container">
             <svg viewBox="${{svgViewBox}}">
-              <g class="viewport-group" transform="scale(1, -1) translate(0, ${{-miny * 2 - height}})">
+              <g class="viewport-group" transform="scale(1, -1)">
                 ${{pathsHtml}}
                 <g class="joints-layer">${{jointsHtml}}</g>
               </g>

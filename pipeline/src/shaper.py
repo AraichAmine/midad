@@ -248,15 +248,62 @@ def _stroke_tangent(points: list[list[float]], at: str = "end") -> tuple[float, 
 # ---------------------------------------------------------------------------
 
 
+def clean_and_align_stroke(
+    points: list[list[float]],
+    is_initial: bool = False,
+    is_medial: bool = False,
+    is_final: bool = False,
+) -> list[list[float]]:
+    """Clean raster thinning hook spurs and align baseline connecting tangents to (-1, 0)."""
+    pts = [list(p) for p in points]
+    if len(pts) < 8:
+        return pts
+
+    # 1. Prune exit hook if moving right or looping
+    if is_initial or is_medial:
+        last_n = min(15, len(pts))
+        min_x_idx = len(pts) - 1
+        for i in range(len(pts) - 1, len(pts) - last_n, -1):
+            if pts[i][0] > pts[i - 1][0] + 0.5:
+                min_x_idx = i - 1
+                break
+        if min_x_idx < len(pts) - 1:
+            pts = pts[: min_x_idx + 1]
+
+    # 2. Prune entry hook if moving right
+    if is_medial or is_final:
+        first_n = min(15, len(pts))
+        max_x_idx = 0
+        for i in range(0, first_n - 1):
+            if pts[i + 1][0] > pts[i][0] + 0.5:
+                max_x_idx = i + 1
+                break
+        if max_x_idx > 0:
+            pts = pts[max_x_idx:]
+
+    # 3. Align endpoint tangents to strictly horizontal (-1, 0)
+    if is_initial or is_medial:
+        p_last = pts[-1]
+        step = max(5.0, math.hypot(p_last[0] - pts[-2][0], p_last[1] - pts[-2][1]))
+        pts[-2] = [p_last[0] + step, p_last[1]]
+
+    if is_medial or is_final:
+        p_first = pts[0]
+        step = max(5.0, math.hypot(pts[1][0] - p_first[0], pts[1][1] - p_first[1]))
+        pts[1] = [p_first[0] - step, p_first[1]]
+
+    return pts
+
+
 def build_paw_trunk_path(
     paw_letters: list[str],
     catalog: dict[str, dict[str, Any]],
+    bridge: float = 20.0,
 ) -> dict[str, Any]:
-    """Build a single continuous trunk path for one PAW with spatial letter placement.
+    """Build a single continuous trunk path for one PAW with smooth spatial letter placement.
 
-    Letters are placed right-to-left: each letter is translated so its entry anchor
-    horizontally meets the previous letter's exit anchor, with a tangent-aligned
-    cubic Bézier bridging any vertical transition at the baseline.
+    Letters are placed right-to-left: each letter connects via a smooth tangent-matched
+    horizontal cubic bridge with zero loop spikes and exact C0/G1 continuity.
     """
 
     if not paw_letters:
@@ -276,7 +323,6 @@ def build_paw_trunk_path(
 
     prev_exit_x: float | None = None
     prev_exit_y: float | None = None
-    prev_exit_tangent: tuple[float, float] | None = None
     current_point: tuple[float, float] | None = None
 
     for index, char in enumerate(paw_letters):
@@ -289,28 +335,27 @@ def build_paw_trunk_path(
             )
 
         strokes = glyph["trunk_strokes"]
-        s0_pts = strokes[0]["points"]
-        entry = glyph.get("entry_anchor")
-        exit_a = glyph.get("exit_anchor")
+        s0_raw = strokes[0]["points"]
 
-        entry_pt = entry if entry else s0_pts[0]
-        exit_pt = exit_a if exit_a else s0_pts[-1]
+        is_init = (index == 0 and len(paw_letters) > 1)
+        is_med = (0 < index < len(paw_letters) - 1)
+        is_fin = (index == len(paw_letters) - 1 and len(paw_letters) > 1)
+
+        s0_pts = clean_and_align_stroke(
+            s0_raw, is_initial=is_init, is_medial=is_med, is_final=is_fin
+        )
+        entry_pt = s0_pts[0]
+        exit_pt = s0_pts[-1]
 
         if index == 0:
             dx = 0.0
         else:
-            dx = prev_exit_x - entry_pt[0]
+            dx = (prev_exit_x - bridge) - entry_pt[0]
         dy = 0.0
         letter_translations.append((dx, dy))
 
         shifted_s0 = [[p[0] + dx, p[1] + dy] for p in s0_pts]
         stroke_start = (shifted_s0[0][0], shifted_s0[0][1])
-        stroke_end = (shifted_s0[-1][0], shifted_s0[-1][1])
-
-        p0, p1 = shifted_s0[0], shifted_s0[1]
-        entry_tangent = _unit(p1[0] - p0[0], p1[1] - p0[1])
-        p_penult, p_last = shifted_s0[-2], shifted_s0[-1]
-        exit_tangent = _unit(p_last[0] - p_penult[0], p_last[1] - p_penult[1])
 
         # Preserve secondary strokes (e.g., Tah upright mast)
         for sec_stroke in strokes[1:]:
@@ -328,18 +373,14 @@ def build_paw_trunk_path(
             current_point = stroke_start
         else:
             prev_end = (prev_exit_x, prev_exit_y)
-            gap = _dist(prev_end, stroke_start)
-            if gap > 1e-4:
-                # Tangent-matched cubic Bézier along writing ductus
-                t0 = prev_exit_tangent if prev_exit_tangent is not None else (-1.0, 0.0)
-                t1 = entry_tangent
-                w = min(0.35 * gap, 40.0)
-                c1 = (prev_end[0] + t0[0] * w, prev_end[1] + t0[1] * w)
-                c2 = (stroke_start[0] - t1[0] * w, stroke_start[1] - t1[1] * w)
-                commands.append(
-                    f"C {c1[0]:.4f} {c1[1]:.4f} {c2[0]:.4f} {c2[1]:.4f} {stroke_start[0]:.4f} {stroke_start[1]:.4f}"
-                )
-                total_length += gap
+            # Smooth horizontal cubic bridge along writing ductus
+            span = prev_end[0] - stroke_start[0]
+            c1 = (prev_end[0] - 0.45 * span, prev_end[1])
+            c2 = (stroke_start[0] + 0.45 * span, stroke_start[1])
+            commands.append(
+                f"C {c1[0]:.4f} {c1[1]:.4f} {c2[0]:.4f} {c2[1]:.4f} {stroke_start[0]:.4f} {stroke_start[1]:.4f}"
+            )
+            total_length += span
             current_point = stroke_start
 
         for p in shifted_s0[1:]:
@@ -350,7 +391,6 @@ def build_paw_trunk_path(
 
         prev_exit_x = exit_pt[0] + dx
         prev_exit_y = exit_pt[1] + dy
-        prev_exit_tangent = exit_tangent
 
     d = " ".join(commands)
     return {

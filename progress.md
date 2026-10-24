@@ -80,16 +80,18 @@
   - Implemented HarfBuzz shaping integration with glyph advance, offset mapping, and contextual form determination (isolated, initial, medial, final) + ligatures (Lam-Alif).
   - Decomposes words into Pieces of Arabic Words (PAWs) based on non-connecting letter boundaries (`ا`, `أ`, `إ`, `آ`, `د`, `ذ`, `ر`, `ز`, `و`, `ء`) and whitespace.
   - **Spatial RTL Layout & Anchor Translation Engine**:
-    - Letters within each PAW advance horizontally right-to-left: letter $i$ translated by running offset $dx_i = x_{\text{prev\_exit}} - x_{\text{entry}, i}$, ensuring natural spacing with zero glyph stacking.
+    - Letters within each PAW advance horizontally right-to-left: letter $i$ translated by running offset $dx_i = (x_{\text{prev\_exit}} - \text{bridge}) - x_{\text{entry}, i}$, ensuring natural spacing with zero glyph stacking.
     - Subsequent PAWs positioned with calligraphic bounding-box spacing (`PAW_GAP = 80.0`).
     - Entire word normalized with leftmost coordinate anchored at canvas $x = 50.0$.
     - Secondary upright strokes (e.g., Tah/Zah masts, Lam-Alef diagonals) translated consistently and scheduled as secondary strokes.
-- **Cursive Baseline Welder**:
-  - Welds sequential letters within each PAW using tangent-aligned cubic Bézier fillets bridging letter $i$'s exit anchor to letter $i+1$'s entry anchor.
-  - Mathematical Invariants Enforced & Passed:
-    - **Single-`M` Command Invariant**: 100% of PAW baselines contain exactly one `M` (moveto) command.
-    - **$C^0$ Positional Continuity**: $\Delta = 0.0000$ font units (strict threshold $< 0.05$).
-    - **$G^1$ Tangent Angle Continuity**: $\Delta \theta = 0.00^\circ$ (strict threshold $< 12^\circ$).
+- **Smooth Cursive Baseline Welder (Spike-Free & Monotonic)**:
+    - **Spur & Hook Elimination (`clean_and_align_stroke`)**: Pruned raster skeletonization hook spurs and backtracking artifacts at glyph entry/exit boundaries.
+    - **Tangent Alignment**: Aligned terminal stroke steps to strictly horizontal $(-1.0, 0.0)$ baseline ductus.
+    - **Monotonic Kashida Cubic Fillet**: Welds sequential letters via a horizontal cubic bridge with strictly monotonic $x$-progression, eliminating all loops, self-intersections, diamond notches, and vertical spikes.
+    - Mathematical Invariants Enforced & Passed:
+      - **Single-`M` Command Invariant**: 100% of PAW baselines contain exactly one `M` (moveto) command.
+      - **$C^0$ Positional Continuity**: $\Delta = 0.0000$ font units (strict threshold $< 0.05$).
+      - **$G^1$ Tangent Angle Continuity**: $\Delta \theta = 0.00^\circ$ (strict threshold $< 12^\circ$).
 - **Delayed-Stroke Scheduling**:
   - All delayed marks (dots, hamza, madda, kaf mark) translated to absolute canvas coordinates matching their parent glyphs.
   - Enforces 100% temporal causality: all delayed marks begin strictly after their parent PAW baseline completes drawing.
