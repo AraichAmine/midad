@@ -1,0 +1,632 @@
+{
+  "ا": {
+    "char": "ا",
+    "name": "ARABIC LETTER ALEF",
+    "base_unicode": "0x0627",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFE8D",
+      "initial": null,
+      "medial": null,
+      "final": "0xFE8E"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ب": {
+    "char": "ب",
+    "name": "ARABIC LETTER BEH",
+    "base_unicode": "0x0628",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFE8F",
+      "initial": "0xFE91",
+      "medial": "0xFE92",
+      "final": "0xFE90"
+    },
+    "dot_count": 1,
+    "dot_placement": "below",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ت": {
+    "char": "ت",
+    "name": "ARABIC LETTER TEH",
+    "base_unicode": "0x062A",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFE95",
+      "initial": "0xFE97",
+      "medial": "0xFE98",
+      "final": "0xFE96"
+    },
+    "dot_count": 2,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ث": {
+    "char": "ث",
+    "name": "ARABIC LETTER THEH",
+    "base_unicode": "0x062B",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFE99",
+      "initial": "0xFE9B",
+      "medial": "0xFE9C",
+      "final": "0xFE9A"
+    },
+    "dot_count": 3,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ج": {
+    "char": "ج",
+    "name": "ARABIC LETTER JEEM",
+    "base_unicode": "0x062C",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFE9D",
+      "initial": "0xFE9F",
+      "medial": "0xFEA0",
+      "final": "0xFE9E"
+    },
+    "dot_count": 1,
+    "dot_placement": "below",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ح": {
+    "char": "ح",
+    "name": "ARABIC LETTER HAH",
+    "base_unicode": "0x062D",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEA1",
+      "initial": "0xFEA3",
+      "medial": "0xFEA4",
+      "final": "0xFEA2"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "خ": {
+    "char": "خ",
+    "name": "ARABIC LETTER KHAH",
+    "base_unicode": "0x062E",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEA5",
+      "initial": "0xFEA7",
+      "medial": "0xFEA8",
+      "final": "0xFEA6"
+    },
+    "dot_count": 1,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "د": {
+    "char": "د",
+    "name": "ARABIC LETTER DAL",
+    "base_unicode": "0x062F",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEA9",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEAA"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ذ": {
+    "char": "ذ",
+    "name": "ARABIC LETTER THAL",
+    "base_unicode": "0x0630",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEAB",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEAC"
+    },
+    "dot_count": 1,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ر": {
+    "char": "ر",
+    "name": "ARABIC LETTER REH",
+    "base_unicode": "0x0631",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEAD",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEAE"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ز": {
+    "char": "ز",
+    "name": "ARABIC LETTER ZAIN",
+    "base_unicode": "0x0632",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEAF",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEB0"
+    },
+    "dot_count": 1,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "س": {
+    "char": "س",
+    "name": "ARABIC LETTER SEEN",
+    "base_unicode": "0x0633",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEB1",
+      "initial": "0xFEB3",
+      "medial": "0xFEB4",
+      "final": "0xFEB2"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ش": {
+    "char": "ش",
+    "name": "ARABIC LETTER SHEEN",
+    "base_unicode": "0x0634",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEB5",
+      "initial": "0xFEB7",
+      "medial": "0xFEB8",
+      "final": "0xFEB6"
+    },
+    "dot_count": 3,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ص": {
+    "char": "ص",
+    "name": "ARABIC LETTER SAD",
+    "base_unicode": "0x0635",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEB9",
+      "initial": "0xFEBB",
+      "medial": "0xFEBC",
+      "final": "0xFEBA"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 1
+  },
+  "ض": {
+    "char": "ض",
+    "name": "ARABIC LETTER DAD",
+    "base_unicode": "0x0636",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEBD",
+      "initial": "0xFEBF",
+      "medial": "0xFEC0",
+      "final": "0xFEBE"
+    },
+    "dot_count": 1,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 1
+  },
+  "ط": {
+    "char": "ط",
+    "name": "ARABIC LETTER TAH",
+    "base_unicode": "0x0637",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEC1",
+      "initial": "0xFEC3",
+      "medial": "0xFEC4",
+      "final": "0xFEC2"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": true,
+    "expected_loop_count": 1
+  },
+  "ظ": {
+    "char": "ظ",
+    "name": "ARABIC LETTER ZAH",
+    "base_unicode": "0x0638",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEC5",
+      "initial": "0xFEC7",
+      "medial": "0xFEC8",
+      "final": "0xFEC6"
+    },
+    "dot_count": 1,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": true,
+    "expected_loop_count": 1
+  },
+  "ع": {
+    "char": "ع",
+    "name": "ARABIC LETTER AIN",
+    "base_unicode": "0x0639",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEC9",
+      "initial": "0xFECB",
+      "medial": "0xFECC",
+      "final": "0xFECA"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "غ": {
+    "char": "غ",
+    "name": "ARABIC LETTER GHAIN",
+    "base_unicode": "0x063A",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFECD",
+      "initial": "0xFECF",
+      "medial": "0xFED0",
+      "final": "0xFECE"
+    },
+    "dot_count": 1,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ف": {
+    "char": "ف",
+    "name": "ARABIC LETTER FEH",
+    "base_unicode": "0x0641",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFED1",
+      "initial": "0xFED3",
+      "medial": "0xFED4",
+      "final": "0xFED2"
+    },
+    "dot_count": 1,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 1
+  },
+  "ق": {
+    "char": "ق",
+    "name": "ARABIC LETTER QAF",
+    "base_unicode": "0x0642",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFED5",
+      "initial": "0xFED7",
+      "medial": "0xFED8",
+      "final": "0xFED6"
+    },
+    "dot_count": 2,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 1
+  },
+  "ك": {
+    "char": "ك",
+    "name": "ARABIC LETTER KAF",
+    "base_unicode": "0x0643",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFED9",
+      "initial": "0xFEDB",
+      "medial": "0xFEDC",
+      "final": "0xFEDA"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": true,
+    "expected_loop_count": 0
+  },
+  "ل": {
+    "char": "ل",
+    "name": "ARABIC LETTER LAM",
+    "base_unicode": "0x0644",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEDD",
+      "initial": "0xFEDF",
+      "medial": "0xFEE0",
+      "final": "0xFEDE"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "م": {
+    "char": "م",
+    "name": "ARABIC LETTER MEEM",
+    "base_unicode": "0x0645",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEE1",
+      "initial": "0xFEE3",
+      "medial": "0xFEE4",
+      "final": "0xFEE2"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 1
+  },
+  "ن": {
+    "char": "ن",
+    "name": "ARABIC LETTER NOON",
+    "base_unicode": "0x0646",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEE5",
+      "initial": "0xFEE7",
+      "medial": "0xFEE8",
+      "final": "0xFEE6"
+    },
+    "dot_count": 1,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ه": {
+    "char": "ه",
+    "name": "ARABIC LETTER HEH",
+    "base_unicode": "0x0647",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEE9",
+      "initial": "0xFEEB",
+      "medial": "0xFEEC",
+      "final": "0xFEEA"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 1
+  },
+  "و": {
+    "char": "و",
+    "name": "ARABIC LETTER WAW",
+    "base_unicode": "0x0648",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEED",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEEE"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 1
+  },
+  "ي": {
+    "char": "ي",
+    "name": "ARABIC LETTER YEH",
+    "base_unicode": "0x064A",
+    "joining_type": "D",
+    "forms": {
+      "isolated": "0xFEF1",
+      "initial": "0xFEF3",
+      "medial": "0xFEF4",
+      "final": "0xFEF2"
+    },
+    "dot_count": 2,
+    "dot_placement": "below",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ة": {
+    "char": "ة",
+    "name": "ARABIC LETTER TEH MARBUTA",
+    "base_unicode": "0x0629",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFE93",
+      "initial": null,
+      "medial": null,
+      "final": "0xFE94"
+    },
+    "dot_count": 2,
+    "dot_placement": "above",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 1
+  },
+  "ى": {
+    "char": "ى",
+    "name": "ARABIC LETTER ALEF MAKSURA",
+    "base_unicode": "0x0649",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEEF",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEF0"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "ء": {
+    "char": "ء",
+    "name": "ARABIC LETTER HAMZA",
+    "base_unicode": "0x0621",
+    "joining_type": "U",
+    "forms": {
+      "isolated": "0xFE80",
+      "initial": null,
+      "medial": null,
+      "final": null
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": true,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "لا": {
+    "char": "لا",
+    "name": "ARABIC LIGATURE LAM WITH ALEF",
+    "base_unicode": "0xFEFB",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEFB",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEFC"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "لأ": {
+    "char": "لأ",
+    "name": "ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE",
+    "base_unicode": "0xFEF7",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEF7",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEF8"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": true,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "لإ": {
+    "char": "لإ",
+    "name": "ARABIC LIGATURE LAM WITH ALEF WITH HAMZA BELOW",
+    "base_unicode": "0xFEF9",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEF9",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEFA"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": true,
+    "has_madda": false,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  },
+  "لآ": {
+    "char": "لآ",
+    "name": "ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE",
+    "base_unicode": "0xFEF5",
+    "joining_type": "R",
+    "forms": {
+      "isolated": "0xFEF5",
+      "initial": null,
+      "medial": null,
+      "final": "0xFEF6"
+    },
+    "dot_count": 0,
+    "dot_placement": "none",
+    "has_hamza": false,
+    "has_madda": true,
+    "has_crossbar": false,
+    "expected_loop_count": 0
+  }
+}
