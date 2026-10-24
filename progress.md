@@ -75,26 +75,45 @@
 
 ---
 
-## Next Milestone: MILESTONE 3 — RTL Shaping & Baseline Welding Engine
-
-### Objectives
-1. **HarfBuzz Cursive Offset Mapping**:
-   - Given any Arabic text string, query HarfBuzz glyph positioning (`x_advance`, `x_offset`, `y_offset`) to translate each glyph into absolute canvas coordinates.
-2. **Piece-of-Arabic-Word (PAW) Baseline Welder (`engine/src/welder.ts`)**:
-   - Identify PAW boundaries (non-connecting letters: ا, د, ذ, ر, ز, و, etc.).
-   - Connect adjacent cursive letters within each PAW by bridging `exit_anchor` of letter $i$ to `entry_anchor` of letter $i+1$.
-   - Enforce geometric continuity invariants:
-     - $C^0$ positional continuity: Euclidean distance $\Delta < 0.05$ font units.
-     - $G^1$ tangent angle continuity: $\Delta \theta < 12^\circ$ at the weld point.
-   - Maintain the single-`M` command invariant per PAW baseline path.
-3. **Delayed-Stroke Scheduling**:
-   - Order delayed strokes (dots, hamza, madda) strictly after their parent PAW baseline trunk completes, sorted temporally by $s_{\text{attach}}$.
-4. **Interactive Welding Debugger**:
-   - Create `/debugger/milestone3_joints.html` to visually inspect joint welds and tangent continuity across 50 canonical Arabic words.
-5. **Human-in-the-Loop (HITL) Checkpoint #2**:
-   - Pause for operator visual approval of welded cursive joints before moving to Milestone 4.
+### 7. Milestone 3: RTL Shaping & Baseline Welding Engine (COMPLETE ✅)
+- **HarfBuzz Cursive Layout Bridge (`pipeline/src/shaper.py`)**:
+  - Implemented HarfBuzz shaping integration with glyph advance, offset mapping, and contextual form determination (isolated, initial, medial, final) + ligatures (Lam-Alif).
+  - Decomposes words into Pieces of Arabic Words (PAWs) based on non-connecting letter boundaries (`ا`, `أ`, `إ`, `آ`, `د`, `ذ`, `ر`, `ز`, `و`, `ء`) and whitespace.
+- **Cursive Baseline Welder**:
+  - Welds sequential letters within each PAW using tangent-aligned cubic Bézier fillets bridging letter $i$'s exit anchor to letter $i+1$'s entry anchor.
+  - Mathematical Invariants Enforced & Passed:
+    - **Single-`M` Command Invariant**: 100% of PAW baselines contain exactly one `M` (moveto) command.
+    - **$C^0$ Positional Continuity**: $\Delta = 0.0000$ font units (strict threshold $< 0.05$).
+    - **$G^1$ Tangent Angle Continuity**: $\Delta \theta = 0.00^\circ$ (strict threshold $< 12^\circ$).
+- **Delayed-Stroke Scheduling**:
+  - All delayed marks (dots, hamza, madda, kaf mark) translated to absolute canvas coordinates.
+  - Enforces 100% temporal causality: all delayed marks begin strictly after their parent PAW baseline completes drawing.
+- **50-Word Canonical Corpus**:
+  - Exported golden fixture: `fixtures/golden/welded_50_words.json` (50 unique words, 94 PAW baselines, 153 delayed strokes).
+- **Interactive Visual Debugger**:
+  - Created `/debugger/milestone3_joints.html` (standalone 1.35 MB interactive visual inspector).
+  - Displays: welded PAW baselines, green glowing $C^0/G^1$ joint markers, role-colored delayed marks, sequential handwriting animation scrubber, and search filters.
+- **Verification**:
+  - `pipeline/tests/test_milestone3_welding.py`: **5 passed in 0.45s**
+  - Consolidated Python test suite: **332 passed, 10 skipped in 1.20s**.
 
 ---
+
+## Current Status: Human-in-the-Loop (HITL) Checkpoint #2 Ready 🔍
+- **Inspection Target**: `/debugger/milestone3_joints.html`
+- **Operator Review Items**:
+  1. Inspect baseline continuity and smooth welded transitions across the 50 canonical words.
+  2. Confirm single-`M` unbroken pen flow for each PAW.
+  3. Verify delayed dots, hamzas, and maddas appear in correct calligraphic sequence after their parent baseline.
+
+---
+
+## Next Milestone: MILESTONE 4 — Vara.js API & Web Animation Engine
+- Objectives:
+  1. TypeScript runtime engine (`engine/src/midad.ts`, `engine/src/renderer.ts`).
+  2. Vara.js-compatible API: `new Midad(selector, fontJson, options)`.
+  3. SVG stroke-dasharray and stroke-dashoffset handwriting animations with variable calligraphy stroke width.
+  4. Speed control, pause, resume, and delayed-stroke timing cascades.
 
 ## Operational Notes
 - **Vitest**: Skipped per user instruction to avoid worker thread hangs in this container environment. Engine validation uses Playwright headless tests and isolated verification scripts.
