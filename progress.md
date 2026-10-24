@@ -133,6 +133,17 @@
   - TypeScript Typecheck (`tsc --noEmit`): **0 errors**.
   - Python Kinematics & Welding Suite: **24 passed in 0.98s**.
 
+### 9. Calligraphic Repair: Initial Heh (`هـ`) Teardrop Loop (`25e2af0`)
+- **Issue**: Initial-form Heh (`ه_initial`) was incorrectly selecting the composite 2-hole outer cycle, forming a dual-peaked heart/apple shape with an open top and omitting the inner eye.
+- **Fix in `pipeline/src/skeletonizer.py`**:
+  - Isolated the inner eye cycle $C_0$ (enclosing Hole 0) via edge symmetric difference of $C_{\text{both}} \Delta C_1$.
+  - Implemented authentic Naskh cursive ductus: starts at the top outer apex ($x \approx 510, y \approx 330$), descends down the outer right curve to the baseline junction ($x \approx 401, y \approx 84$), traverses the complete closed teardrop/triangular inner eye loop ($C_0$), and exits smoothly along the baseline to the exit anchor ($x \approx 208, y \approx 6$).
+- **Verification**:
+  - `card_heh_initial.png` visual verification confirmed a clean, closed teardrop eye and smooth descending outer stroke with zero dual peak / notch.
+  - `card_word_hind.png` confirmed proper baseline connection in cursive words (e.g., `هند`).
+  - Pytest (`test_milestone1_topology.py`, `test_milestone2_kinematics.py`, `test_milestone3_welding.py`): **36/36 passed**.
+  - Playwright (`milestone4_animation.spec.ts`): **5/5 passed**.
+
 ---
 
 ## Current Status: Milestone 4 Complete & Ready for Operator Demonstration 🚀
