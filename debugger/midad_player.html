@@ -9,22 +9,63 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-gradient: radial-gradient(circle at 50% 0%, #151d30 0%, #080c14 100%);
-      --card-bg: rgba(15, 23, 42, 0.75);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --panel-bg: rgba(30, 41, 59, 0.5);
-      --panel-border: rgba(255, 255, 255, 0.1);
-      --accent-cyan: #06b6d4;
-      --accent-emerald: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-rose: #f43f5e;
-      --accent-glow: rgba(6, 182, 212, 0.25);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-arabic: 'Noto Naskh Arabic', 'Amiri', serif;
-      --font-display: 'Outfit', sans-serif;
+      /* Design System: Midad Player — Dark Mode (OLED) */
+      --color-background: #0f172a;
+      --color-foreground: #f8fafc;
+      --color-card: #1b2336;
+      --color-card-foreground: #f8fafc;
+      --color-muted: #272f42;
+      --color-muted-foreground: #94a3b8;
+      --color-border: #475569;
+      --color-primary: #1e293b;
+      --color-on-primary: #ffffff;
+      --color-secondary: #334155;
+      --color-on-secondary: #ffffff;
+      --color-accent: #22c55e;
+      --color-on-accent: #0f172a;
+      --color-destructive: #ef4444;
+      --color-on-destructive: #000000;
+      --color-ring: #ffffff;
+
+      /* Ink accents (handwriting strokes) */
+      --ink-cyan: #06b6d4;
+      --ink-emerald: #10b981;
+      --ink-amber: #f59e0b;
+      --ink-purple: #a855f7;
+      --ink-rose: #f43f5e;
+      --ink-white: #f8fafc;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.2);
+
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+
+      --radius-sm: 0.5rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-full: 9999px;
+
+      --font-ui: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-arabic: 'Noto Naskh Arabic', 'Amiri', 'Segoe UI', serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      --transition: 180ms ease;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
     }
 
     * {
@@ -33,23 +74,35 @@
       padding: 0;
     }
 
+    html {
+      scrollbar-gutter: stable;
+    }
+
     body {
-      background: #080c14;
-      background-image: var(--bg-gradient);
-      color: var(--text-main);
+      background: var(--color-background);
+      color: var(--color-foreground);
       font-family: var(--font-ui);
+      font-size: 16px;
+      line-height: 1.5;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--color-ring);
+      outline-offset: 2px;
+      border-radius: 2px;
     }
 
     /* Header Bar */
     header {
-      background: rgba(8, 12, 20, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--card-border);
-      padding: 0.9rem 2rem;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--color-border);
+      padding: 1rem var(--space-lg);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -61,152 +114,180 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-md);
     }
 
-    .logo {
-      font-family: var(--font-arabic);
-      font-size: 2.2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #10b981 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
-      line-height: 1;
+    .logo-mark {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--ink-cyan) 0%, var(--ink-emerald) 100%);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+    }
+
+    .logo-mark svg {
+      width: 20px;
+      height: 20px;
+      fill: #0f172a;
+    }
+
+    .brand-copy {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
     }
 
     .brand-title {
-      font-family: var(--font-display);
-      font-size: 1.1rem;
+      font-family: var(--font-arabic);
+      font-size: 1.5rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #f1f5f9;
+      color: #ffffff;
+      letter-spacing: -0.02em;
     }
 
     .brand-subtitle {
-      font-size: 0.72rem;
-      color: var(--text-dim);
-      letter-spacing: 0.02em;
+      font-size: 0.75rem;
+      color: var(--color-muted-foreground);
+      letter-spacing: 0.03em;
+      font-family: var(--font-ui);
+      font-weight: 500;
+      text-transform: uppercase;
     }
 
     .header-badges {
       display: flex;
-      gap: 0.6rem;
+      gap: var(--space-sm);
       align-items: center;
     }
 
     .badge {
-      background: rgba(6, 182, 212, 0.12);
-      border: 1px solid rgba(6, 182, 212, 0.25);
-      color: #38bdf8;
-      padding: 0.25rem 0.65rem;
-      border-radius: 9999px;
-      font-size: 0.72rem;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: var(--color-accent);
+      padding: 0.2rem 0.7rem;
+      border-radius: var(--radius-full);
+      font-size: 0.7rem;
       font-weight: 600;
+      font-family: var(--font-mono);
       display: flex;
       align-items: center;
       gap: 0.35rem;
-    }
-    .badge.emerald {
-      background: rgba(16, 185, 129, 0.12);
-      border-color: rgba(16, 185, 129, 0.25);
-      color: #34d399;
+      cursor: default;
     }
 
     /* Main Container */
     main {
-      max-width: 1300px;
-      margin: 1.5rem auto;
-      padding: 0 1.5rem 3rem;
+      max-width: 1400px;
+      margin: var(--space-lg) auto;
+      padding: 0 var(--space-md) var(--space-2xl);
       width: 100%;
       display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 1.5rem;
+      grid-template-columns: 1fr 360px;
+      gap: var(--space-lg);
       flex: 1;
     }
 
-    @media (max-width: 960px) {
+    @media (max-width: 1024px) {
       main {
         grid-template-columns: 1fr;
+        gap: var(--space-md);
+      }
+    }
+
+    @media (max-width: 640px) {
+      main {
+        padding: 0 var(--space-sm) var(--space-xl);
       }
     }
 
     /* Stage Panel */
     .stage-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 1.2rem;
-      backdrop-filter: blur(16px);
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+      box-shadow: var(--shadow-xl);
     }
 
     .stage-topbar {
-      padding: 1rem 1.4rem;
-      border-bottom: 1px solid var(--card-border);
+      padding: 1rem var(--space-lg);
+      border-bottom: 1px solid var(--color-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.2);
     }
 
     .current-word-title {
       font-family: var(--font-arabic);
-      font-size: 2.2rem;
+      font-size: 2.75rem;
       font-weight: 700;
       color: #ffffff;
       display: flex;
       align-items: baseline;
-      gap: 0.8rem;
+      gap: var(--space-md);
+      line-height: 1;
     }
 
     .word-index-tag {
-      font-size: 0.75rem;
-      font-family: var(--font-ui);
-      color: var(--text-dim);
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--color-muted-foreground);
       font-weight: 500;
+      padding-top: 0.35rem;
+      letter-spacing: 0.05em;
     }
 
     .live-status-pill {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 0.35rem 0.8rem;
-      border-radius: 0.5rem;
-      border: 1px solid var(--panel-border);
-      font-size: 0.75rem;
+      gap: var(--space-sm);
+      background: rgba(0, 0, 0, 0.35);
+      padding: 0.3rem 0.85rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      font-size: 0.72rem;
+      font-family: var(--font-ui);
+      font-weight: 500;
     }
 
     .status-dot {
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
-      background: #64748b;
-      transition: background 0.3s;
+      background: var(--color-muted-foreground);
+      transition: background var(--transition), box-shadow var(--transition);
     }
     .status-dot.playing {
-      background: #10b981;
-      box-shadow: 0 0 10px #10b981;
+      background: var(--color-accent);
+      box-shadow: 0 0 12px var(--color-accent);
     }
     .status-dot.paused {
-      background: #f59e0b;
-      box-shadow: 0 0 10px #f59e0b;
+      background: var(--ink-amber);
+      box-shadow: 0 0 12px var(--ink-amber);
+    }
+    .status-dot.idle {
+      background: var(--color-muted-foreground);
     }
 
     /* Canvas Area */
     .canvas-viewport {
       flex: 1;
-      min-height: 420px;
+      min-height: 520px;
       position: relative;
-      background: radial-gradient(circle at center, rgba(17, 24, 39, 0.9) 0%, rgba(10, 15, 26, 0.95) 100%);
+      background: radial-gradient(circle at center, rgba(17, 24, 39, 0.8) 0%, rgba(8, 12, 20, 0.95) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 2rem;
       overflow: hidden;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
     }
 
     /* Grid lines in canvas */
@@ -215,16 +296,19 @@
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 30px 30px;
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
       pointer-events: none;
+      border-radius: var(--radius-lg);
+      mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
     }
 
     #midadContainer {
       width: 100%;
       height: 100%;
-      min-height: 380px;
+      min-height: 460px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -234,56 +318,75 @@
 
     /* SVG Stroke Glow */
     .glow-effect .midad-stroke {
-      filter: drop-shadow(0 0 8px currentColor);
+      filter: drop-shadow(0 0 10px currentColor);
+    }
+
+    /* Empty stage state */
+    .empty-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      color: var(--color-muted-foreground);
+      text-align: center;
+      padding: var(--space-xl);
+    }
+
+    .empty-stage svg {
+      width: 64px;
+      height: 64px;
+      opacity: 0.5;
     }
 
     /* Timeline & Playback Bar */
     .playback-toolbar {
-      padding: 1.25rem 1.5rem;
-      background: rgba(0, 0, 0, 0.35);
-      border-top: 1px solid var(--card-border);
+      padding: var(--space-lg);
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid var(--color-border);
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--space-lg);
     }
 
     .scrubber-row {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-md);
     }
 
     .time-label {
-      font-size: 0.78rem;
-      font-family: var(--font-display);
-      color: var(--text-muted);
-      min-width: 65px;
-      direction: ltr;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--color-muted-foreground);
+      min-width: 56px;
       text-align: center;
+      direction: ltr;
     }
 
     .scrubber-slider {
       flex: 1;
       -webkit-appearance: none;
-      height: 6px;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.12);
+      height: 5px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.1);
       outline: none;
       cursor: pointer;
-      position: relative;
     }
     .scrubber-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
-      background: var(--accent-cyan);
-      box-shadow: 0 0 12px var(--accent-cyan);
+      background: var(--color-accent);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
       cursor: pointer;
-      transition: transform 0.1s;
+      transition: transform var(--transition);
     }
     .scrubber-slider::-webkit-slider-thumb:hover {
-      transform: scale(1.25);
+      transform: scale(1.2);
+    }
+    .scrubber-slider:focus-visible::-webkit-slider-thumb {
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
     }
 
     .controls-row {
@@ -291,82 +394,128 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 0.8rem;
+      gap: var(--space-sm);
     }
 
     .btn-group {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-sm);
     }
 
     .btn {
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid var(--panel-border);
-      color: var(--text-main);
-      padding: 0.5rem 1.1rem;
-      border-radius: 0.6rem;
-      font-size: 0.82rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--color-border);
+      color: var(--color-foreground);
+      padding: 0.55rem 1.1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
       font-weight: 600;
+      font-family: var(--font-ui);
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s;
+      gap: var(--space-sm);
+      transition: all var(--transition);
+      line-height: 1;
     }
     .btn:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.1);
       border-color: rgba(255, 255, 255, 0.2);
       transform: translateY(-1px);
     }
+    .btn:focus-visible {
+      border-color: var(--color-ring);
+    }
+    .btn svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
     .btn.primary {
-      background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
-      border-color: rgba(6, 182, 212, 0.4);
-      color: #ffffff;
-      box-shadow: 0 4px 15px var(--accent-glow);
+      background: var(--color-accent);
+      border-color: transparent;
+      color: var(--color-on-accent);
+      box-shadow: 0 0 0 rgba(34, 197, 94, 0);
     }
     .btn.primary:hover {
-      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.45);
+      background: #29d470;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+    }
+    .btn.primary:active {
+      transform: translateY(0);
+    }
+    .btn.active {
+      background: var(--color-accent);
+      border-color: transparent;
+      color: var(--color-on-accent);
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+    }
+    .btn.secondary {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--color-muted-foreground);
+    }
+    .btn.secondary:hover {
+      color: var(--color-foreground);
+      border-color: var(--color-border);
     }
 
     /* Sidebar Panel */
     .sidebar {
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: var(--space-lg);
     }
 
     .panel-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 1rem;
-      padding: 1.25rem;
-      backdrop-filter: blur(14px);
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-lg);
     }
 
     .panel-title {
-      font-size: 0.88rem;
+      font-size: 0.8rem;
       font-weight: 700;
-      color: #f1f5f9;
-      margin-bottom: 0.9rem;
+      color: var(--color-foreground);
+      margin-bottom: var(--space-md);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      letter-spacing: 0.05em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }
+
+    .panel-title .count {
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--color-muted-foreground);
+      background: var(--color-muted);
+      padding: 0.1rem 0.55rem;
+      border-radius: var(--radius-full);
     }
 
     .word-picker-select {
       width: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid var(--panel-border);
-      border-radius: 0.6rem;
-      color: var(--text-main);
+      background: rgba(2, 6, 12, 0.6);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      color: var(--color-foreground);
       padding: 0.6rem 0.8rem;
       font-family: var(--font-arabic);
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       cursor: pointer;
       outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+    .word-picker-select:focus-visible {
+      border-color: var(--color-ring);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
     }
     .word-picker-select option {
-      background: #0f172a;
+      background: #0b1120;
       color: #f8fafc;
     }
 
@@ -374,53 +523,66 @@
     .quick-chips {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 0.75rem;
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
     }
 
     .chip {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      border-radius: 0.4rem;
-      padding: 0.25rem 0.65rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 0.3rem 0.75rem;
       font-family: var(--font-arabic);
       font-size: 0.95rem;
-      color: var(--text-muted);
+      color: var(--color-muted-foreground);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition);
+      line-height: 1.2;
     }
-    .chip:hover, .chip.active {
+    .chip:hover {
+      background: rgba(6, 182, 212, 0.1);
+      border-color: var(--ink-cyan);
+      color: var(--ink-cyan);
+      transform: translateY(-1px);
+    }
+    .chip.active {
       background: rgba(6, 182, 212, 0.15);
-      border-color: var(--accent-cyan);
-      color: #38bdf8;
+      border-color: var(--ink-cyan);
+      color: var(--ink-cyan);
+      box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15);
+    }
+    .chip:focus-visible {
+      outline: 2px solid var(--color-ring);
+      outline-offset: 1px;
     }
 
     /* Control Sliders in Sidebar */
     .setting-group {
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
-      margin-bottom: 0.85rem;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
     }
 
     .setting-label {
       display: flex;
       justify-content: space-between;
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      font-size: 0.72rem;
+      color: var(--color-muted-foreground);
+      font-family: var(--font-mono);
     }
 
     .setting-value {
       font-weight: 600;
-      color: #38bdf8;
-      font-family: var(--font-display);
+      color: var(--ink-cyan);
+      font-family: var(--font-mono);
     }
 
     .slider {
       -webkit-appearance: none;
-      height: 5px;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.1);
+      height: 4px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.08);
       outline: none;
       cursor: pointer;
     }
@@ -429,55 +591,70 @@
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      background: #38bdf8;
+      background: var(--ink-cyan);
       cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    .slider:focus-visible::-webkit-slider-thumb {
+      box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.25);
     }
 
     /* Palette colors */
     .color-palette {
       display: flex;
-      gap: 0.5rem;
-      margin-top: 0.3rem;
+      gap: var(--space-sm);
+      margin-top: var(--space-xs);
     }
 
     .color-swatch {
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid transparent;
-      transition: transform 0.15s, border-color 0.15s;
+      transition: transform var(--transition), border-color var(--transition);
     }
-    .color-swatch:hover, .color-swatch.active {
+    .color-swatch:hover {
+      transform: scale(1.15);
+    }
+    .color-swatch.active {
       transform: scale(1.2);
       border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    }
+    .color-swatch:focus-visible {
+      outline: 2px solid var(--color-ring);
+      outline-offset: 1px;
     }
 
     /* Event Log List */
     .event-log {
-      max-height: 160px;
+      max-height: 150px;
       overflow-y: auto;
       background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--panel-border);
-      border-radius: 0.5rem;
-      padding: 0.5rem;
-      font-family: monospace;
-      font-size: 0.7rem;
-      color: var(--text-dim);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-sm);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--color-muted-foreground);
       display: flex;
       flex-direction: column-reverse;
-      gap: 0.25rem;
+      gap: var(--space-xs);
     }
     .log-item {
       padding: 0.15rem 0.3rem;
-      border-radius: 0.2rem;
-      border-right: 2px solid var(--accent-cyan);
+      border-radius: 2px;
+      border-right: 2px solid var(--ink-cyan);
       background: rgba(255, 255, 255, 0.02);
       color: #cbd5e1;
     }
     .log-item.complete {
-      border-right-color: #10b981;
-      color: #34d399;
+      border-right-color: var(--color-accent);
+      color: var(--color-accent);
     }
   </style>
 </head>
@@ -485,16 +662,22 @@
 
   <header>
     <div class="brand">
-      <div class="logo">مِداد</div>
-      <div>
-        <div class="brand-title">MIDAD ENGINE</div>
-        <div class="brand-subtitle">Arabic Cursive Handwriting Animation Runtime</div>
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <div class="brand-title">مِداد</div>
+        <div class="brand-subtitle">Arabic Handwriting Engine</div>
       </div>
     </div>
     <div class="header-badges">
-      <span class="badge emerald">✓ Continuous C0/G1 Welds</span>
-      <span class="badge">Midad API Ready</span>
-      <span class="badge">50 Words Corpus</span>
+      <span class="badge">C0 / G1 Welds</span>
+      <span class="badge">Midad API</span>
+      <span class="badge">50 Words</span>
     </div>
   </header>
 
@@ -514,6 +697,13 @@
 
       <div class="canvas-viewport" id="canvasViewport">
         <div id="midadContainer"></div>
+        <div class="empty-stage" id="emptyStage" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="3" y1="3" x2="21" y2="21"/>
+          </svg>
+          <p>Select a word to begin playback</p>
+        </div>
       </div>
 
       <div class="playback-toolbar">
@@ -525,13 +715,28 @@
 
         <div class="controls-row">
           <div class="btn-group">
-            <button class="btn primary" id="playPauseBtn">❚❚ إيقاف مؤقت</button>
-            <button class="btn" id="restartBtn">↺ إعادة التشغيل</button>
-            <button class="btn" id="prevWordBtn">السابق ◀</button>
-            <button class="btn" id="nextWordBtn">▶ التالي</button>
+            <button class="btn primary" id="playPauseBtn" aria-label="إيقاف مؤقت">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <span>إيقاف مؤقت</span>
+            </button>
+            <button class="btn secondary" id="restartBtn" aria-label="إعادة التشغيل">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v16a3 3 0 0 0 3 3h16"/><polyline points="1 4 1 20 5 16"/><polyline points="23 4 23 20 19 16"/></svg>
+              <span>إعادة التشغيل</span>
+            </button>
+            <button class="btn secondary" id="prevWordBtn" aria-label="السابقة">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              <span>السابقة</span>
+            </button>
+            <button class="btn secondary" id="nextWordBtn" aria-label="التالي">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              <span>التالي</span>
+            </button>
           </div>
           <div class="btn-group">
-            <button class="btn" id="toggleGlowBtn">✨ إضاءة (Glow)</button>
+            <button class="btn secondary" id="toggleGlowBtn" aria-label="إضاءة (Glow)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>إضاءة</span>
+            </button>
           </div>
         </div>
       </div>
@@ -541,8 +746,11 @@
     <div class="sidebar">
       <!-- Word Selector -->
       <div class="panel-card">
-        <div class="panel-title">اختيار الكلمة (Select Word)</div>
-        <select class="word-picker-select" id="wordSelect">
+        <div class="panel-title">
+          <span>اختيار الكلمة</span>
+          <span class="count" id="wordCount">50</span>
+        </div>
+        <select class="word-picker-select" id="wordSelect" aria-label="اختر كلمة">
           <!-- Populated dynamically -->
         </select>
         <div class="quick-chips" id="quickChips">
@@ -550,28 +758,15 @@
         </div>
       </div>
 
-      <!-- Live Client-Side Arbitrary Text Shaper -->
-      <div class="panel-card" style="border: 1px solid rgba(6, 182, 212, 0.35); background: rgba(6, 182, 212, 0.06);">
-        <div class="panel-title" style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
-          <span>تشكيل نص مخصص (Arbitrary Text)</span>
-          <span class="badge" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">Live Shaper</span>
-        </div>
-        <div style="display: flex; gap: 0.5rem; margin-top: 0.6rem;">
-          <input type="text" id="customTextInput" placeholder="اكتب أي نص عربي هنا..." style="flex: 1; min-width: 0; padding: 0.55rem 0.75rem; background: rgba(15, 23, 42, 0.85); border: 1px solid var(--panel-border); border-radius: 8px; color: #f8fafc; font-family: var(--font-arabic); font-size: 1.05rem; text-align: right;" value="مرحبا بك في مداد">
-          <button class="btn btn-primary" id="renderCustomTextBtn" style="white-space: nowrap; padding: 0.55rem 0.9rem;">رسم ✦</button>
-        </div>
-        <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 0.45rem; line-height: 1.4;">
-          تشكيل ولحام مسارات الخط العربي في المتصفح لحظياً دون سرفر.
-        </div>
-      </div>
-
       <!-- Animation Settings -->
       <div class="panel-card">
-        <div class="panel-title">إعدادات الحركة (Animation Settings)</div>
+        <div class="panel-title">
+          <span>إعدادات الحركة</span>
+        </div>
 
         <div class="setting-group">
           <div class="setting-label">
-            <span>سرعة الرسم (Speed)</span>
+            <span>سرعة الرسم</span>
             <span class="setting-value" id="speedVal">1.0x</span>
           </div>
           <input type="range" class="slider" id="speedSlider" min="25" max="300" value="100">
@@ -579,7 +774,7 @@
 
         <div class="setting-group">
           <div class="setting-label">
-            <span>سمك الخط (Stroke Width)</span>
+            <span>سمك الخط</span>
             <span class="setting-value" id="strokeVal">28 px</span>
           </div>
           <input type="range" class="slider" id="strokeSlider" min="12" max="55" value="28">
@@ -587,15 +782,15 @@
 
         <div class="setting-group">
           <div class="setting-label">
-            <span>لون الحبر (Ink Color)</span>
+            <span>لون الحبر</span>
           </div>
           <div class="color-palette" id="colorPalette">
-            <div class="color-swatch active" data-color="#06b6d4" style="background:#06b6d4;" title="Cyan"></div>
-            <div class="color-swatch" data-color="#10b981" style="background:#10b981;" title="Emerald"></div>
-            <div class="color-swatch" data-color="#f59e0b" style="background:#f59e0b;" title="Amber"></div>
-            <div class="color-swatch" data-color="#a855f7" style="background:#a855f7;" title="Purple"></div>
-            <div class="color-swatch" data-color="#f43f5e" style="background:#f43f5e;" title="Rose"></div>
-            <div class="color-swatch" data-color="#f8fafc" style="background:#f8fafc;" title="White"></div>
+            <button class="color-swatch active" data-color="#06b6d4" style="background:#06b6d4;" type="button" title="Cyan" aria-pressed="true"></button>
+            <button class="color-swatch" data-color="#10b981" style="background:#10b981;" type="button" title="Emerald" aria-pressed="false"></button>
+            <button class="color-swatch" data-color="#f59e0b" style="background:#f59e0b;" type="button" title="Amber" aria-pressed="false"></button>
+            <button class="color-swatch" data-color="#a855f7" style="background:#a855f7;" type="button" title="Purple" aria-pressed="false"></button>
+            <button class="color-swatch" data-color="#f43f5e" style="background:#f43f5e;" type="button" title="Rose" aria-pressed="false"></button>
+            <button class="color-swatch" data-color="#f8fafc" style="background:#f8fafc;" type="button" title="White" aria-pressed="false"></button>
           </div>
         </div>
       </div>
@@ -603,8 +798,8 @@
       <!-- Diagnostics & Events -->
       <div class="panel-card">
         <div class="panel-title">
-          <span>سجل الأحداث (Event Stream)</span>
-          <span style="font-size:0.65rem; color:var(--text-dim);" id="eventCountBadge">0 أحداث</span>
+          <span>سجل الأحداث</span>
+          <span class="count" id="eventCountBadge">0 أحداث</span>
         </div>
         <div class="event-log" id="eventLog">
           <div class="log-item">Engine initialized and ready</div>
@@ -613,12 +808,11 @@
     </div>
   </main>
 
-  <!-- Midad Engine UMD Bundle -->
-  <script src="/engine/dist/midad.umd.js"></script>
+  <!-- Embedded UMD Engine -->
   <script>
-    if (typeof window.Midad === 'undefined') {
-      document.write('<script src="../engine/dist/midad.umd.js"><\/script>');
-    }
+    (function(w,x){typeof exports=="object"&&typeof module<"u"?x(exports):typeof define=="function"&&define.amd?define(["exports"],x):(w=typeof globalThis<"u"?globalThis:w||self,x(w.Midad={}))})(this,(function(w){"use strict";var ft=Object.defineProperty;var pt=(w,x,P)=>x in w?ft(w,x,{enumerable:!0,configurable:!0,writable:!0,value:P}):w[x]=P;var T=(w,x,P)=>pt(w,typeof x!="symbol"?x+"":x,P);const tt={M:2,L:2,C:6,Q:4,Z:0},et=/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?/g,st=new Set(["M","L","C","Q","Z"]);function R(l){if(typeof l!="string")throw new TypeError("SVG path data must be a string");const t=l.match(et)??[],e=[];let s=0,d=null,n=!1,r=[0,0],c=[0,0];const h=()=>{const o=t[s];if(o===void 0||/^[a-zA-Z]$/.test(o))throw new Error(`Expected a number at token ${s} in path`);s+=1;const i=Number(o);if(!Number.isFinite(i))throw new Error(`Invalid number ${o} in path`);return i};for(;s<t.length;){const o=t[s];if(/^[a-zA-Z]$/.test(o)){if(d=o.toUpperCase(),n=o===o.toLowerCase(),s+=1,!st.has(d))throw new Error(`Unsupported SVG command '${o}'`)}else if(d===null)throw new Error("SVG path must start with a command");const i=d;if(i===null)throw new Error("SVG path must start with a command");const a=n,m=tt[i];if(m===0){i==="Z"&&(r[0]!==c[0]||r[1]!==c[1])&&(e.push({command:"L",points:[c]}),r=c),d=null;continue}const f=[];for(let g=0;g<m;g+=1){const p=h();if(a){const u=g%2===0;f.push(p+(u?r[0]:r[1]))}else f.push(p)}if(i==="M"){const g=[f[0],f[1]];e.push({command:"M",points:[g]}),r=g,c=g,d="L"}else if(i==="L"){const g=[f[0],f[1]];e.push({command:"L",points:[g]}),r=g}else if(i==="Q"){const g=[f[0],f[1]],p=[f[2],f[3]];e.push({command:"Q",points:[g,p]}),r=p}else if(i==="C"){const g=[f[0],f[1]],p=[f[2],f[3]],u=[f[4],f[5]];e.push({command:"C",points:[g,p,u]}),r=u}}return e}function C(l){return l.points[l.points.length-1]}function nt(l,t){return l.command==="M"?l.points[0]:t}function L(l,t){return Math.hypot(l[0]-t[0],l[1]-t[1])}function ot(l,t,e){if(l.command==="M"||l.command==="L"){const c=l.points[0];return[t[0]+(c[0]-t[0])*e,t[1]+(c[1]-t[1])*e]}if(l.command==="Q"){const[c,h]=l.points,o=1-e;return[o*o*t[0]+2*o*e*c[0]+e*e*h[0],o*o*t[1]+2*o*e*c[1]+e*e*h[1]]}const[s,d,n]=l.points,r=1-e;return[r**3*t[0]+3*r*r*e*s[0]+3*r*e*e*d[0]+e**3*n[0],r**3*t[1]+3*r*r*e*s[1]+3*r*e*e*d[1]+e**3*n[1]]}function W(l,t=100){if(l.filter(i=>i.command!=="M").length===0)return[];const s=[];let d=l[0].points[0];for(const i of l){if(i.command==="M"){d=i.points[0],s.push(d);continue}const a=d,m=32;for(let f=1;f<=m;f+=1)s.push(ot(i,a,f/m));d=C(i)}if(s.length<2)return s;const n=[0];for(let i=1;i<s.length;i+=1)n.push(n[i-1]+L(s[i-1],s[i]));const r=n[n.length-1];if(r<=1e-9)return[s[0]];const c=Math.max(50,Math.floor(t)),h=[];let o=0;for(let i=0;i<c;i+=1){const a=r*i/(c-1);for(;o+1<n.length&&n[o+1]<a;)o+=1;if(o+1>=n.length){h.push(s[s.length-1]);continue}const m=n[o+1]-n[o],f=m<=1e-9?0:(a-n[o])/m,g=s[o],p=s[o+1];h.push([g[0]+(p[0]-g[0])*f,g[1]+(p[1]-g[1])*f])}return h}function it(l){if(l.length<2)return 0;let t=0,e=0;for(let s=1;s<l.length;s+=1){const d=l[s-1],n=l[s],r=n[0]-d[0],c=n[1]-d[1],h=Math.hypot(r,c);t+=h,(r<=1e-9||c<-1e-9)&&(e+=h)}return t<=1e-9?0:e/t}function rt(l){const t=[];let e=[];try{e=R(l)}catch(o){return{valid:!1,rtlRatio:0,singleMove:!1,c0Continuous:!1,errors:[`Failed to parse SVG path: ${o instanceof Error?o.message:String(o)}`]}}const s=e.map((o,i)=>o.command==="M"?i:-1).filter(o=>o>=0),d=s.length===1&&s[0]===0&&e.length>1;d||t.push(`Expected exactly one 'M' command at index 0; found ${s.length} move command(s) at ${JSON.stringify(s)}`);let n=e.length>1,r=null;for(let o=0;o<e.length;o+=1){const i=e[o],a=r?nt(i,r):i.points[0];r&&L(r,a)>.001&&(n=!1,t.push(`C0 discontinuity before segment ${o} (${i.command}): expected (${r[0]}, ${r[1]}), got (${a[0]}, ${a[1]})`)),r=C(i)}const c=W(e,100),h=it(c);return c.length<50&&t.push(`RTL check requires at least 50 samples; got ${c.length}`),h<.85&&t.push(`RTL monotonicity failed: ${(h*100).toFixed(2)}% of arc length moves right-to-left (minimum ${(.85*100).toFixed(0)}%)`),{valid:t.length===0,rtlRatio:h,singleMove:d,c0Continuous:n,errors:t}}function at(l,t){return l.startTime<t.endTime-1e-9&&t.startTime<l.endTime-1e-9}function O(l){const t=[];if(!l||!Array.isArray(l.paws)||!Array.isArray(l.items))return{valid:!1,errors:["Timeline must contain paws and items arrays"]};const e=new Map(l.paws.map(n=>[n.id,n])),s=new Map;for(const n of l.items){if(!Number.isFinite(n.startTime)||!Number.isFinite(n.endTime)){t.push(`Item '${n.strokeId}' has non-finite timestamps`);continue}if(n.endTime<n.startTime-1e-9&&t.push(`Item '${n.strokeId}' has negative duration (${n.startTime} -> ${n.endTime})`),!e.has(n.pawId)){t.push(`Item '${n.strokeId}' references unknown paw '${n.pawId}'`);continue}const r=s.get(n.pawId)??[];r.push(n),s.set(n.pawId,r)}const d=new Map;for(const n of l.paws){const r=s.get(n.id)??[],c=r.filter(a=>a.type==="trunk");c.length!==1?t.push(`Paw '${n.id}' must have exactly one trunk timeline item; found ${c.length}`):d.set(n.id,c[0]);const h=r.filter(a=>a.type==="delayed"),o=c[0];if(o)for(const a of h)o.endTime>a.startTime+.001&&t.push(`Delayed stroke '${a.strokeId}' starts at ${a.startTime} before paw '${n.id}' trunk finishes at ${o.endTime}`);const i=[...h].sort((a,m)=>a.startTime-m.startTime||a.endTime-m.endTime);for(let a=1;a<i.length;a+=1)at(i[a-1],i[a])&&t.push(`Delayed strokes '${i[a-1].strokeId}' and '${i[a].strokeId}' overlap within paw '${n.id}'`)}for(let n=0;n<l.paws.length-1;n+=1){const r=l.paws[n],c=l.paws[n+1],h=d.get(c.id);if(!h)continue;const o=s.get(r.id)??[];for(const i of o)i.endTime>h.startTime+.001&&t.push(`Item '${i.strokeId}' from paw '${r.id}' ends at ${i.endTime}, after paw '${c.id}' trunk starts at ${h.startTime}`)}return{valid:t.length===0,errors:t}}const dt=1500,lt=40,ct=100,ht=60,B=/[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?/g;function U(l){if(!l||l.length<2)return 0;let t=0;for(let e=1;e<l.length;e++){const s=l[e][0]-l[e-1][0],d=l[e][1]-l[e-1][1];t+=Math.hypot(s,d)}return t}function X(l){if(!l||l.length===0)return"";const t=l[0],e=[`M ${t[0].toFixed(2)} ${t[1].toFixed(2)}`];for(let s=1;s<l.length;s++)e.push(`L ${l[s][0].toFixed(2)} ${l[s][1].toFixed(2)}`);return e.join(" ")}function Y(l,t=ht){var f;let e=1/0,s=1/0,d=-1/0,n=-1/0;for(const g of l.paws){if((f=g.trunkStroke)!=null&&f.d){const p=g.trunkStroke.d.match(B);if(p)for(let u=0;u<p.length-1;u+=2){const k=parseFloat(p[u]),I=parseFloat(p[u+1]);Number.isFinite(k)&&Number.isFinite(I)&&(k<e&&(e=k),k>d&&(d=k),I<s&&(s=I),I>n&&(n=I))}}if(g.delayedStrokes){for(const p of g.delayedStrokes)if(p.points)for(const[u,k]of p.points)u<e&&(e=u),u>d&&(d=u),k<s&&(s=k),k>n&&(n=k);else if(p.d){const u=p.d.match(B);if(u)for(let k=0;k<u.length-1;k+=2){const I=parseFloat(u[k]),$=parseFloat(u[k+1]);Number.isFinite(I)&&Number.isFinite($)&&(I<e&&(e=I),I>d&&(d=I),$<s&&(s=$),$>n&&(n=$))}}}}(!Number.isFinite(e)||!Number.isFinite(d))&&(e=0,s=-200,d=1e3,n=800);const r=e-t,c=s-t,h=d+t,o=n+t,i=Math.max(100,h-r),a=Math.max(100,o-c),m=`${r.toFixed(1)} ${(-o).toFixed(1)} ${i.toFixed(1)} ${a.toFixed(1)}`;return{minX:r,minY:c,maxX:h,maxY:o,width:i,height:a,viewBox:m}}function G(l){return l.map((t,e)=>{var c;const s=t.id||`paw_${e}`,d={id:((c=t.trunkStroke)==null?void 0:c.id)||`${s}_trunk`,d:t.trunkStroke.d,length:t.trunkStroke.length||100,type:"trunk",startPoint:t.trunkStroke.startPoint,endPoint:t.trunkStroke.endPoint},n=(t.delayedStrokes||[]).map((h,o)=>{const i=h.id||`${s}_delayed_${o}`,a=h.d||(h.points?X(h.points):""),m=h.length||(h.points?U(h.points):50);return{id:i,d:a,length:m,type:"dot"}}),r=(t.secondaryStrokes||[]).map((h,o)=>({id:h.id||`${s}_secondary_${o}`,d:h.d,length:h.length||100,type:"secondary"}));return{id:s,trunkStroke:d,delayedStrokes:n,secondaryStrokes:r}})}function N(l,t={}){const e=G(l.paws),s=(t.pauseBetweenStrokes??lt)/1e3,d=(t.pauseBetweenPaws??ct)/1e3,n=t.speed??dt;let r=0;for(const p of e){r+=p.trunkStroke.length;for(const u of p.secondaryStrokes||[])r+=u.length;for(const u of p.delayedStrokes)r+=u.length}const c=typeof t.duration=="number"&&t.duration>0,h=c?t.duration/1e3:r/n,o=p=>r<=0?.1:c?p/r*h:Math.max(.02,p/n),i=[];let a=0;for(let p=0;p<e.length;p++){const u=e[p],k=o(u.trunkStroke.length),I=a,$=I+k;if(i.push({strokeId:u.trunkStroke.id,pawId:u.id,type:"trunk",startTime:I,endTime:$}),a=$,u.secondaryStrokes&&u.secondaryStrokes.length>0)for(const M of u.secondaryStrokes){a+=s;const S=o(M.length),y=a,A=y+S;i.push({strokeId:M.id,pawId:u.id,type:"secondary",startTime:y,endTime:A}),a=A}if(u.delayedStrokes.length>0)for(const M of u.delayedStrokes){a+=s;const S=o(M.length),y=a,A=y+S;i.push({strokeId:M.id,pawId:u.id,type:"delayed",startTime:y,endTime:A}),a=A}p<e.length-1&&(a+=d)}const m={paws:e,items:i,totalDuration:a},f=O(m);if(!f.valid)throw new Error(`Timeline causality failure: ${f.errors.join("; ")}`);const g=Y(l,t.padding);return{timeline:m,boundingBox:g}}class j{constructor(t,e,s={},d){T(this,"container");T(this,"svgElement",null);T(this,"viewportGroup",null);T(this,"state","idle");T(this,"scheduled");T(this,"options");T(this,"strokeMap",new Map);T(this,"rafId",null);T(this,"lastTimestamp",null);T(this,"currentTime",0);T(this,"speedMultiplier",1);T(this,"onEvent");T(this,"activeStrokes",new Set);T(this,"completedStrokes",new Set);T(this,"activePaws",new Set);T(this,"completedPaws",new Set);this.container=t,this.scheduled=e,this.options={strokeWidth:28,color:"#06b6d4",autoAnimation:!0,nibAngle:-45,...s},this.onEvent=d,this.initDOM()}initDOM(){var h;const{boundingBox:t,timeline:e}=this.scheduled,s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox",t.viewBox),s.setAttribute("class","midad-svg"),s.style.width="100%",s.style.height="100%",s.style.overflow="visible",s.style.display="block";const d=document.createElementNS("http://www.w3.org/2000/svg","defs");s.appendChild(d);const n=document.createElementNS("http://www.w3.org/2000/svg","g");n.setAttribute("class","midad-viewport"),n.setAttribute("transform","scale(1, -1)"),s.appendChild(n);const r=this.options.color||"#06b6d4",c=this.options.strokeWidth||28;for(const o of e.paws){if((h=o.trunkStroke)!=null&&h.d){const i=document.createElementNS("http://www.w3.org/2000/svg","path");i.setAttribute("id",o.trunkStroke.id),i.setAttribute("class","midad-stroke midad-trunk"),i.setAttribute("d",o.trunkStroke.d),i.setAttribute("fill","none"),i.setAttribute("stroke",r),i.setAttribute("stroke-width",c.toString()),i.setAttribute("stroke-linecap","round"),i.setAttribute("stroke-linejoin","round"),n.appendChild(i)}for(const i of o.secondaryStrokes||[])if(i.d){const a=document.createElementNS("http://www.w3.org/2000/svg","path");a.setAttribute("id",i.id),a.setAttribute("class","midad-stroke midad-secondary"),a.setAttribute("d",i.d),a.setAttribute("fill","none"),a.setAttribute("stroke",r),a.setAttribute("stroke-width",(c*.9).toString()),a.setAttribute("stroke-linecap","round"),a.setAttribute("stroke-linejoin","round"),n.appendChild(a)}for(const i of o.delayedStrokes)if(i.d){const a=document.createElementNS("http://www.w3.org/2000/svg","path");a.setAttribute("id",i.id),a.setAttribute("class","midad-stroke midad-delayed"),a.setAttribute("d",i.d),a.setAttribute("fill","none"),a.setAttribute("stroke",r),a.setAttribute("stroke-width",(c*1.05).toString()),a.setAttribute("stroke-linecap","round"),a.setAttribute("stroke-linejoin","round"),n.appendChild(a)}}this.container.appendChild(s),this.svgElement=s,this.viewportGroup=n;for(const o of e.items){const i=n.querySelector(`#${CSS.escape(o.strokeId)}`);if(i){let a=o.strokeId.includes("delayed")?60:300;try{if(typeof i.getTotalLength=="function"){const m=i.getTotalLength();m>0&&(a=m)}}catch{}i.style.strokeDasharray=`${a} ${a}`,i.style.strokeDashoffset=`${a}`,this.strokeMap.set(o.strokeId,{pathElement:i,item:o,length:a})}}}play(){this.state!=="playing"&&(this.currentTime>=this.scheduled.timeline.totalDuration&&this.reset(),this.state="playing",this.lastTimestamp=null,this.emit("start",{duration:this.scheduled.timeline.totalDuration}),this.rafId=requestAnimationFrame(this.onAnimationFrame.bind(this)))}pause(){this.state==="playing"&&(this.state="paused",this.rafId!==null&&(cancelAnimationFrame(this.rafId),this.rafId=null))}resume(){this.state==="paused"&&this.play()}reset(){this.pause(),this.currentTime=0,this.activeStrokes.clear(),this.completedStrokes.clear(),this.activePaws.clear(),this.completedPaws.clear();for(const{pathElement:t,length:e}of this.strokeMap.values())t.style.strokeDashoffset=`${e}`;this.state="idle"}restart(){this.reset(),this.play()}seek(t){const e=Math.max(0,Math.min(1,t));this.currentTime=e*this.scheduled.timeline.totalDuration,this.updateStrokes(this.currentTime),this.emit("progress",{currentTime:this.currentTime,totalDuration:this.scheduled.timeline.totalDuration,progress:e})}setSpeed(t){t>0&&(this.speedMultiplier=t)}onAnimationFrame(t){if(this.state!=="playing")return;this.lastTimestamp===null&&(this.lastTimestamp=t);const e=(t-this.lastTimestamp)/1e3*this.speedMultiplier;this.lastTimestamp=t,this.currentTime+=e;const s=this.scheduled.timeline.totalDuration,d=Math.min(1,s>0?this.currentTime/s:1);if(this.updateStrokes(this.currentTime),this.emit("progress",{currentTime:Math.min(this.currentTime,s),totalDuration:s,progress:d}),this.currentTime>=s){this.state="completed",this.rafId=null,this.emit("complete");return}this.rafId=requestAnimationFrame(this.onAnimationFrame.bind(this))}updateStrokes(t){const{timeline:e}=this.scheduled;for(const s of e.items){const d=this.strokeMap.get(s.strokeId);if(!d)continue;const{pathElement:n,length:r}=d,{startTime:c,endTime:h,pawId:o,strokeId:i}=s;if(t>=c&&!this.activePaws.has(o)&&(this.activePaws.add(o),this.emit("pawStart",{pawId:o})),t<=c)n.style.strokeDashoffset=`${r}`;else if(t>=h)n.style.strokeDashoffset="0",this.activeStrokes.has(i)&&!this.completedStrokes.has(i)&&(this.activeStrokes.delete(i),this.completedStrokes.add(i),this.emit("strokeEnd",{strokeId:i,pawId:o}));else{this.activeStrokes.has(i)||(this.activeStrokes.add(i),this.emit("strokeStart",{strokeId:i,pawId:o}));const a=Math.max(.001,h-c),m=(t-c)/a,f=Math.max(0,r*(1-m));n.style.strokeDashoffset=`${f.toFixed(2)}`}}for(const s of e.paws)this.activePaws.has(s.id)&&!this.completedPaws.has(s.id)&&e.items.filter(r=>r.pawId===s.id).every(r=>t>=r.endTime)&&(this.completedPaws.add(s.id),this.emit("pawEnd",{pawId:s.id}))}emit(t,e){this.onEvent&&this.onEvent(t,e)}destroy(){this.pause(),this.svgElement&&this.svgElement.parentNode&&this.svgElement.parentNode.removeChild(this.svgElement),this.strokeMap.clear(),this.svgElement=null,this.viewportGroup=null}}const q=new Set(["ا","أ","إ","آ","د","ذ","ر","ز","و","ء"]),Z=new Set(["ا","أ","إ","آ","د","ذ","ر","ز","و"]);function z(l){const t=[];let e=[];for(let s=0;s<l.length;s++){const d=l[s];if(/\s|[.,!?;:()،؛؟]/.test(d)){e.length>0&&(t.push(e),e=[]);continue}if(/[اأإآ]/.test(d)){e.length>0&&(t.push(e),e=[]),t.push([d]);continue}e.push(d),q.has(d)&&(t.push(e),e=[])}return e.length>0&&t.push(e),t}function _(l,t,e){if(l==="ء")return"isolated";const s=e.length;return s===1?"isolated":Z.has(l)?t===0?"isolated":"final":t===0?"initial":t===s-1?"final":"medial"}function Q(l,t,e,s){if(l.length<6)return l.slice();let d=l.map(n=>[n[0],n[1]]);if(t||e){const n=d.length;let r=n;for(let o=n-1;o>=Math.max(n-6,2);o--){const i=d[o][0]-d[o-1][0],a=Math.abs(d[o][1]-d[o-1][1]);if(i>.5||a>10){r=o;break}}r<n&&r>=4&&(d=d.slice(0,r));const c=d[d.length-1],h=d[d.length-2];d[d.length-1]=[c[0],h[1]]}if((e||s)&&d.length>=6){const n=d[0],r=d[1];d[0]=[n[0],r[1]]}return d}function ut(l,t,e=25){const s=[],d=[],n=[];let r=0,c=0,h=0;for(let o=0;o<l.length;o++){const i=l[o],a=_(i,o,l),m=`${i}_${a}`,f=t[m]||t[`${i}_isolated`];if(!f||!f.trunk_strokes||f.trunk_strokes.length===0){d.push([0,0]);continue}const g=f.trunk_strokes[0].points,p=o===0&&l.length>1,u=o>0&&o<l.length-1,k=o===l.length-1&&l.length>1,I=Q(g,p,u,k),$=I[0];I[I.length-1];let M=0;if(o===0)M=0;else{let E=e;const F=l[o-1];["ه","ح","خ","ج"].includes(F)&&["ر","ز"].includes(i)&&(E=150),M=c-E-$[0]}const S=0;d.push([M,S]);const y=I.map(E=>[E[0]+M,E[1]+S]),A=y[0];for(let E=1;E<f.trunk_strokes.length;E++){const F=f.trunk_strokes[E];n.push({points:F.points.map(b=>[b[0]+M,b[1]+S]),length:F.length||100})}if(o===0)s.push(`M ${A[0].toFixed(1)} ${A[1].toFixed(1)}`);else{const E=c-A[0],F=c-.4*E,b=h,v=A[0]+.4*E,D=A[1];s.push(`C ${F.toFixed(1)} ${b.toFixed(1)} ${v.toFixed(1)} ${D.toFixed(1)} ${A[0].toFixed(1)} ${A[1].toFixed(1)}`),r+=Math.hypot(E,h-A[1])}for(let E=1;E<y.length;E++){const F=y[E];s.push(`L ${F[0].toFixed(1)} ${F[1].toFixed(1)}`);const b=y[E-1];r+=Math.hypot(F[0]-b[0],F[1]-b[1])}c=y[y.length-1][0],h=y[y.length-1][1]}return{d:s.join(" "),trunkLength:r,letterTranslations:d,secondaryStrokes:n}}function J(l,t,e=0){const s=l.match(/[a-zA-Z]|[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?/g)||[],d=[];let n=0;for(;n<s.length;){const r=s[n];if(/^[a-zA-Z]$/.test(r)){const c=r;if(d.push(c),n++,c==="M"||c==="L"){const h=parseFloat(s[n++]),o=parseFloat(s[n++]);d.push((h+t).toFixed(1),(o+e).toFixed(1))}else if(c==="C"){const h=parseFloat(s[n++]),o=parseFloat(s[n++]),i=parseFloat(s[n++]),a=parseFloat(s[n++]),m=parseFloat(s[n++]),f=parseFloat(s[n++]);d.push((h+t).toFixed(1),(o+e).toFixed(1),(i+t).toFixed(1),(a+e).toFixed(1),(m+t).toFixed(1),(f+e).toFixed(1))}else if(c==="Q"){const h=parseFloat(s[n++]),o=parseFloat(s[n++]),i=parseFloat(s[n++]),a=parseFloat(s[n++]);d.push((h+t).toFixed(1),(o+e).toFixed(1),(i+t).toFixed(1),(a+e).toFixed(1))}}else n++}return d.join(" ")}function V(l,t,e={}){const s=e.bridge??25,d=e.pawGap??80,n=z(l),r=[];let c=0;for(let a=0;a<n.length;a++){const m=n[a],f=`paw_${a}`,g=ut(m,t,s),p=[];for(let S=0;S<m.length;S++){const y=m[S],A=_(y,S,m),E=t[`${y}_${A}`]||t[`${y}_isolated`];if(!E)continue;const[F,b]=g.letterTranslations[S];for(const v of E.delayed_strokes||[]){const D=v.points.map(K=>[K[0]+F,K[1]+b]);p.push({role:v.role,attachment_s:v.attachment_s,points:D,length:v.length})}}for(const S of g.secondaryStrokes)p.push({role:"inner_mark",attachment_s:.5,points:S.points,length:S.length});let u=1/0,k=-1/0;const I=g.d.match(/[-+]?\d*\.?\d+/g)||[];for(let S=0;S<I.length-1;S+=2){const y=parseFloat(I[S]);y<u&&(u=y),y>k&&(k=y)}for(const S of p)for(const y of S.points||[])y[0]<u&&(u=y[0]),y[0]>k&&(k=y[0]);Number.isFinite(u)||(u=0,k=100);let $=0;a===0?$=0:$=c-d-k;const M=u+$;c=M,r.push({pawId:f,letters:m.join(""),trunkD:g.d,trunkLength:g.trunkLength,shiftX:$,globalMinX:M,delayedRecords:p})}const o=50-Math.min(...r.map(a=>a.globalMinX),0),i=r.map(a=>{const m=a.shiftX+o,f=J(a.trunkD,m,0),g=a.delayedRecords.map((u,k)=>{const $=(u.points||[]).map(M=>[M[0]+m,M[1]]).map((M,S)=>`${S===0?"M":"L"} ${M[0].toFixed(1)} ${M[1].toFixed(1)}`);return{id:`${a.pawId}_delayed_${k}`,role:u.role,attachment_s:u.attachment_s,d:$.join(" "),length:u.length}}),p={id:`${a.pawId}_trunk`,d:f,length:Math.round(a.trunkLength),type:"trunk"};return{id:a.pawId,letters:a.letters,trunkStroke:p,delayedStrokes:g}});return{text:l,paws:i}}class H{constructor(t,e,s,d={}){T(this,"container");T(this,"fontData",null);T(this,"options");T(this,"texts",[]);T(this,"currentWordIndex",0);T(this,"renderer",null);T(this,"isReady",!1);T(this,"listeners",new Map);T(this,"scheduledWords",[]);if(typeof t=="string"){const r=document.querySelector(t);if(!r)throw new Error(`Midad: Container element '${t}' not found in DOM`);this.container=r}else this.container=t;this.options={autoAnimation:!0,queued:!0,speed:1500,strokeWidth:28,color:"#06b6d4",pauseBetweenStrokes:40,pauseBetweenPaws:100,...d};const n=Array.isArray(s)?s:[s];this.texts=n.map((r,c)=>typeof r=="string"?{text:r,id:`text_${c}`,color:this.options.color,strokeWidth:this.options.strokeWidth}:{id:r.id||`text_${c}`,color:r.color||this.options.color,strokeWidth:r.strokeWidth||this.options.strokeWidth,...r}),this.loadFontData(e).catch(r=>{console.error("Midad: Failed to load font data:",r)})}async loadFontData(t){if(typeof t=="string")if(t.trim().startsWith("{"))this.fontData=JSON.parse(t);else if(typeof fetch=="function"){const e=await fetch(t);if(!e.ok)throw new Error(`Failed to fetch font JSON: ${e.status} ${e.statusText}`);this.fontData=await e.json()}else throw new Error("Midad: fetch is not available to load font URL");else if("glyphs"in t)this.fontData=t;else if("words"in t)this.fontData=t;else if("paws"in t)this.fontData={words:[t]};else if(typeof t=="object"&&t!==null&&!Array.isArray(t))this.fontData={glyphs:t};else throw new TypeError("Midad: Invalid font data format");this.onFontReady()}onFontReady(){if(!this.fontData)throw new Error("Midad: Loaded font data is null");const t=new Map;for(const e of this.fontData.words||[])t.set(e.text,e);this.scheduledWords=[];for(const e of this.texts){let s=t.get(e.text);if(!s&&this.fontData.glyphs)try{s=V(e.text,this.fontData.glyphs)}catch(n){console.warn(`Midad: Runtime shaping failed for '${e.text}':`,n)}if(!s){console.warn(`Midad: Word '${e.text}' not found in font dictionary; using closest fallback`),queueMicrotask(()=>{this.emit("warning",{code:"WORD_NOT_FOUND",text:e.text,message:`Word '${e.text}' not found in font dictionary; using closest fallback`})});const n=this.fontData.words&&this.fontData.words[0]||null;if(n){const r=N(n,{speed:e.speed??this.options.speed,duration:e.duration??this.options.duration,pauseBetweenStrokes:e.pauseBetweenStrokes??this.options.pauseBetweenStrokes,pauseBetweenPaws:e.pauseBetweenPaws??this.options.pauseBetweenPaws});this.scheduledWords.push(r)}continue}const d=N(s,{speed:e.speed??this.options.speed,duration:e.duration??this.options.duration,pauseBetweenStrokes:e.pauseBetweenStrokes??this.options.pauseBetweenStrokes,pauseBetweenPaws:e.pauseBetweenPaws??this.options.pauseBetweenPaws});this.scheduledWords.push(d)}this.isReady=!0,this.options.autoAnimation?this.play(0):this.mountWordRenderer(0),this.emit("ready",{wordsCount:this.scheduledWords.length})}play(t){return this.isReady?(typeof t=="number"&&t>=0&&t<this.scheduledWords.length?(this.currentWordIndex=t,this.mountWordRenderer(this.currentWordIndex)):this.renderer||this.mountWordRenderer(this.currentWordIndex),this.renderer&&this.renderer.play(),this):(this.once("ready",()=>this.play(t)),this)}mountWordRenderer(t){this.renderer&&(this.renderer.destroy(),this.renderer=null);const e=this.scheduledWords[t];if(!e)return;const s=this.texts[t],d={...this.options,color:(s==null?void 0:s.color)||this.options.color,strokeWidth:(s==null?void 0:s.strokeWidth)||this.options.strokeWidth};this.renderer=new j(this.container,e,d,(n,r)=>{this.emit(n,{wordIndex:t,wordText:s==null?void 0:s.text,...r}),n==="complete"&&(this.emit("animationEnd",{wordIndex:t,wordText:s==null?void 0:s.text,...r}),this.options.queued&&t+1<this.scheduledWords.length&&(this.currentWordIndex=t+1,setTimeout(()=>{var c;this.mountWordRenderer(this.currentWordIndex),(c=this.renderer)==null||c.play()},this.options.pauseBetweenPaws??100)))})}pause(){var t;return(t=this.renderer)==null||t.pause(),this}resume(){var t;return(t=this.renderer)==null||t.resume(),this}reset(t){var e;return typeof t=="number"&&t>=0&&t<this.scheduledWords.length&&(this.currentWordIndex=t,this.mountWordRenderer(this.currentWordIndex)),(e=this.renderer)==null||e.reset(),this}restart(t){var s;const e=typeof t=="number"?t:this.currentWordIndex;return this.play(e),(s=this.renderer)==null||s.restart(),this}ready(t){return this.on("ready",t)}animationEnd(t){return this.on("animationEnd",e=>{const s=(e==null?void 0:e.wordIndex)??this.currentWordIndex;t(s,this.texts[s])})}seek(t){var e;return(e=this.renderer)==null||e.seek(t),this}get state(){return this.renderer?this.renderer.state:"idle"}get(t){var e;return((e=this.renderer)==null?void 0:e.svgElement)??null}on(t,e){let s=this.listeners.get(t);return s||(s=new Set,this.listeners.set(t,s)),s.add(e),t==="ready"&&this.isReady&&queueMicrotask(()=>{e({wordsCount:this.scheduledWords.length})}),this}once(t,e){const s=d=>{this.off(t,s),e(d)};return this.on(t,s)}off(t,e){const s=this.listeners.get(t);return s&&s.delete(e),this}emit(t,e){const s=this.listeners.get(t);if(s)for(const d of s)try{d(e)}catch(n){console.error(`Midad: Error in '${t}' event listener:`,n)}}destroy(){this.renderer&&(this.renderer.destroy(),this.renderer=null),this.listeners.clear(),this.scheduledWords=[]}}w.CONTINUITY_TOLERANCE=.001,w.Midad=H,w.MidadRenderer=j,w.NON_CONNECTING=q,w.RIGHT_JOINING=Z,w.RTL_MIN_RATIO=.85,w.RTL_SAMPLE_COUNT=100,w.assertDelayedStrokeCausality=O,w.assertPawContinuity=rt,w.buildTimeline=N,w.cleanAndAlignStroke=Q,w.computePointsLength=U,w.computeWordBoundingBox=Y,w.default=H,w.determineForm=_,w.normalizePaws=G,w.parseSvgPath=R,w.partitionPaws=z,w.pointsToSvgPath=X,w.samplePathPoints=W,w.shapeArabicText=V,w.shiftPathD=J,Object.defineProperties(w,{__esModule:{value:!0},[Symbol.toStringTag]:{value:"Module"}})}));
+//# sourceMappingURL=midad.umd.js.map
+
   </script>
 
   <!-- Player Controller -->
@@ -694,6 +888,10 @@
       wordHeading.textContent = w.text;
       wordIndexTag.textContent = `#${idx + 1} من ${WORDS.length} (${w.paws.length} PAWs)`;
       wordSelect.value = idx;
+      document.getElementById('wordCount').textContent = WORDS.length;
+
+      const emptyStage = document.getElementById('emptyStage');
+      if (emptyStage) emptyStage.style.display = 'none';
 
       document.querySelectorAll('.chip').forEach(c => {
         c.classList.toggle('active', c.textContent.trim() === w.text);
@@ -723,7 +921,7 @@
       midadInstance.on('start', (d) => {
         statusDot.className = 'status-dot playing';
         statusText.textContent = 'Playing';
-        playPauseBtn.textContent = '❚❚ إيقاف مؤقت';
+        playPauseBtn.textContent = 'إيقاف مؤقت';
         if (d?.duration) {
           totalTimeLabel.textContent = `${d.duration.toFixed(2)}s`;
         }
@@ -745,7 +943,7 @@
       midadInstance.on('complete', () => {
         statusDot.className = 'status-dot paused';
         statusText.textContent = 'Completed';
-        playPauseBtn.textContent = '↺ إعادة البدء';
+        playPauseBtn.textContent = 'إعادة البدء';
         addLog(`Completed '${targetWord.text}'`, true);
       });
     }
@@ -774,12 +972,12 @@
         midadInstance.pause();
         statusDot.className = 'status-dot paused';
         statusText.textContent = 'Paused';
-        playPauseBtn.textContent = '▶ استئناف';
+        playPauseBtn.textContent = 'استئناف';
       } else if (midadInstance.state === 'paused') {
         midadInstance.resume();
         statusDot.className = 'status-dot playing';
         statusText.textContent = 'Playing';
-        playPauseBtn.textContent = '❚❚ إيقاف مؤقت';
+        playPauseBtn.textContent = 'إيقاف مؤقت';
       } else {
         midadInstance.restart();
       }
@@ -832,102 +1030,7 @@
     toggleGlowBtn.onclick = () => {
       isGlow = !isGlow;
       container.classList.toggle('glow-effect', isGlow);
-      toggleGlowBtn.style.borderColor = isGlow ? 'var(--accent-cyan)' : '';
-      toggleGlowBtn.style.color = isGlow ? '#38bdf8' : '';
-    };
-
-    // Live Client-Side Arbitrary Text Shaper
-    const customTextInput = document.getElementById('customTextInput');
-    const renderCustomTextBtn = document.getElementById('renderCustomTextBtn');
-
-    let glyphsCatalog = null;
-    async function loadGlyphsCatalog() {
-      if (glyphsCatalog) return glyphsCatalog;
-      const paths = [
-        '/engine/dist/fonts/noto_naskh_glyphs.json',
-        '../engine/dist/fonts/noto_naskh_glyphs.json',
-        './fonts/noto_naskh_glyphs.json'
-      ];
-      for (const p of paths) {
-        try {
-          const resp = await fetch(p);
-          if (resp.ok) {
-            const json = await resp.json();
-            glyphsCatalog = json.glyphs || json;
-            return glyphsCatalog;
-          }
-        } catch (err) {}
-      }
-      return null;
-    }
-
-    renderCustomTextBtn.onclick = async () => {
-      const text = (customTextInput.value || '').trim();
-      if (!text) return;
-
-      renderCustomTextBtn.disabled = true;
-      renderCustomTextBtn.textContent = '...جاري التشكيل';
-
-      try {
-        const catalog = await loadGlyphsCatalog();
-        const fontSource = catalog ? { glyphs: catalog } : FONT_DATA;
-
-        wordHeading.textContent = text;
-        wordIndexTag.textContent = `نص حر تشكيل لحظي (${text.length} أحرف)`;
-
-        if (midadInstance) {
-          midadInstance.destroy();
-          midadInstance = null;
-        }
-        container.innerHTML = '';
-
-        const MidadClass = window.Midad?.Midad || window.Midad;
-        midadInstance = new MidadClass(container, fontSource, text, {
-          autoAnimation: true,
-          speed: 1500 * currentSpeedMultiplier,
-          strokeWidth: currentStrokeWidth,
-          color: currentColor,
-          pauseBetweenStrokes: 40,
-          pauseBetweenPaws: 100,
-        });
-
-        midadInstance.on('start', (d) => {
-          statusDot.className = 'status-dot playing';
-          statusText.textContent = 'Playing';
-          playPauseBtn.textContent = '❚❚ إيقاف مؤقت';
-          if (d?.duration) {
-            totalTimeLabel.textContent = `${d.duration.toFixed(2)}s`;
-          }
-          addLog(`Started custom text '${text}'`);
-        });
-
-        midadInstance.on('progress', (d) => {
-          if (!isSeeking && d) {
-            currentTimeLabel.textContent = `${d.currentTime.toFixed(2)}s`;
-            totalTimeLabel.textContent = `${d.totalDuration.toFixed(2)}s`;
-            scrubber.value = (d.progress * 100).toFixed(1);
-          }
-        });
-
-        midadInstance.on('complete', () => {
-          statusDot.className = 'status-dot paused';
-          statusText.textContent = 'Completed';
-          playPauseBtn.textContent = '↺ إعادة البدء';
-          addLog(`Completed custom text '${text}'`, true);
-        });
-      } catch (err) {
-        console.error('Custom text shaping failed:', err);
-        addLog(`Error shaping custom text: ${err.message}`);
-      } finally {
-        renderCustomTextBtn.disabled = false;
-        renderCustomTextBtn.textContent = 'رسم ✦';
-      }
-    };
-
-    customTextInput.onkeydown = (e) => {
-      if (e.key === 'Enter') {
-        renderCustomTextBtn.click();
-      }
+      toggleGlowBtn.classList.toggle('active', isGlow);
     };
 
     // Initial Load

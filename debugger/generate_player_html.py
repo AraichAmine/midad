@@ -37,22 +37,63 @@ def generate_player_html():
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Outfit:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {{
-      --bg-gradient: radial-gradient(circle at 50% 0%, #151d30 0%, #080c14 100%);
-      --card-bg: rgba(15, 23, 42, 0.75);
-      --card-border: rgba(255, 255, 255, 0.08);
-      --panel-bg: rgba(30, 41, 59, 0.5);
-      --panel-border: rgba(255, 255, 255, 0.1);
-      --accent-cyan: #06b6d4;
-      --accent-emerald: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-rose: #f43f5e;
-      --accent-glow: rgba(6, 182, 212, 0.25);
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
-      --font-ui: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-arabic: 'Noto Naskh Arabic', 'Amiri', serif;
-      --font-display: 'Outfit', sans-serif;
+      /* Design System: Midad Player — Dark Mode (OLED) */
+      --color-background: #0f172a;
+      --color-foreground: #f8fafc;
+      --color-card: #1b2336;
+      --color-card-foreground: #f8fafc;
+      --color-muted: #272f42;
+      --color-muted-foreground: #94a3b8;
+      --color-border: #475569;
+      --color-primary: #1e293b;
+      --color-on-primary: #ffffff;
+      --color-secondary: #334155;
+      --color-on-secondary: #ffffff;
+      --color-accent: #22c55e;
+      --color-on-accent: #0f172a;
+      --color-destructive: #ef4444;
+      --color-on-destructive: #000000;
+      --color-ring: #ffffff;
+
+      /* Ink accents (handwriting strokes) */
+      --ink-cyan: #06b6d4;
+      --ink-emerald: #10b981;
+      --ink-amber: #f59e0b;
+      --ink-purple: #a855f7;
+      --ink-rose: #f43f5e;
+      --ink-white: #f8fafc;
+
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+      --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.15);
+      --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.2);
+
+      --space-xs: 0.25rem;
+      --space-sm: 0.5rem;
+      --space-md: 1rem;
+      --space-lg: 1.5rem;
+      --space-xl: 2rem;
+      --space-2xl: 3rem;
+
+      --radius-sm: 0.5rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-full: 9999px;
+
+      --font-ui: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-arabic: 'Noto Naskh Arabic', 'Amiri', 'Segoe UI', serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+      --transition: 180ms ease;
+    }}
+
+    @media (prefers-reduced-motion: reduce) {{
+      *, *::before, *::after {{
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }}
     }}
 
     * {{
@@ -61,23 +102,35 @@ def generate_player_html():
       padding: 0;
     }}
 
+    html {{
+      scrollbar-gutter: stable;
+    }}
+
     body {{
-      background: #080c14;
-      background-image: var(--bg-gradient);
-      color: var(--text-main);
+      background: var(--color-background);
+      color: var(--color-foreground);
       font-family: var(--font-ui);
+      font-size: 16px;
+      line-height: 1.5;
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }}
+
+    :focus-visible {{
+      outline: 2px solid var(--color-ring);
+      outline-offset: 2px;
+      border-radius: 2px;
     }}
 
     /* Header Bar */
     header {{
-      background: rgba(8, 12, 20, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--card-border);
-      padding: 0.9rem 2rem;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--color-border);
+      padding: 1rem var(--space-lg);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -89,152 +142,180 @@ def generate_player_html():
     .brand {{
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-md);
     }}
 
-    .logo {{
-      font-family: var(--font-arabic);
-      font-size: 2.2rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #38bdf8 0%, #06b6d4 50%, #10b981 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 30px rgba(6, 182, 212, 0.3);
-      line-height: 1;
+    .logo-mark {{
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--ink-cyan) 0%, var(--ink-emerald) 100%);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+    }}
+
+    .logo-mark svg {{
+      width: 20px;
+      height: 20px;
+      fill: #0f172a;
+    }}
+
+    .brand-copy {{
+      display: flex;
+      flex-direction: column;
+      line-height: 1.15;
     }}
 
     .brand-title {{
-      font-family: var(--font-display);
-      font-size: 1.1rem;
+      font-family: var(--font-arabic);
+      font-size: 1.5rem;
       font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #f1f5f9;
+      color: #ffffff;
+      letter-spacing: -0.02em;
     }}
 
     .brand-subtitle {{
-      font-size: 0.72rem;
-      color: var(--text-dim);
-      letter-spacing: 0.02em;
+      font-size: 0.75rem;
+      color: var(--color-muted-foreground);
+      letter-spacing: 0.03em;
+      font-family: var(--font-ui);
+      font-weight: 500;
+      text-transform: uppercase;
     }}
 
     .header-badges {{
       display: flex;
-      gap: 0.6rem;
+      gap: var(--space-sm);
       align-items: center;
     }}
 
     .badge {{
-      background: rgba(6, 182, 212, 0.12);
-      border: 1px solid rgba(6, 182, 212, 0.25);
-      color: #38bdf8;
-      padding: 0.25rem 0.65rem;
-      border-radius: 9999px;
-      font-size: 0.72rem;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.2);
+      color: var(--color-accent);
+      padding: 0.2rem 0.7rem;
+      border-radius: var(--radius-full);
+      font-size: 0.7rem;
       font-weight: 600;
+      font-family: var(--font-mono);
       display: flex;
       align-items: center;
       gap: 0.35rem;
-    }}
-    .badge.emerald {{
-      background: rgba(16, 185, 129, 0.12);
-      border-color: rgba(16, 185, 129, 0.25);
-      color: #34d399;
+      cursor: default;
     }}
 
     /* Main Container */
     main {{
-      max-width: 1300px;
-      margin: 1.5rem auto;
-      padding: 0 1.5rem 3rem;
+      max-width: 1400px;
+      margin: var(--space-lg) auto;
+      padding: 0 var(--space-md) var(--space-2xl);
       width: 100%;
       display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 1.5rem;
+      grid-template-columns: 1fr 360px;
+      gap: var(--space-lg);
       flex: 1;
     }}
 
-    @media (max-width: 960px) {{
+    @media (max-width: 1024px) {{
       main {{
         grid-template-columns: 1fr;
+        gap: var(--space-md);
+      }}
+    }}
+
+    @media (max-width: 640px) {{
+      main {{
+        padding: 0 var(--space-sm) var(--space-xl);
       }}
     }}
 
     /* Stage Panel */
     .stage-card {{
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 1.2rem;
-      backdrop-filter: blur(16px);
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+      box-shadow: var(--shadow-xl);
     }}
 
     .stage-topbar {{
-      padding: 1rem 1.4rem;
-      border-bottom: 1px solid var(--card-border);
+      padding: 1rem var(--space-lg);
+      border-bottom: 1px solid var(--color-border);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(0, 0, 0, 0.25);
+      background: rgba(0, 0, 0, 0.2);
     }}
 
     .current-word-title {{
       font-family: var(--font-arabic);
-      font-size: 2.2rem;
+      font-size: 2.75rem;
       font-weight: 700;
       color: #ffffff;
       display: flex;
       align-items: baseline;
-      gap: 0.8rem;
+      gap: var(--space-md);
+      line-height: 1;
     }}
 
     .word-index-tag {{
-      font-size: 0.75rem;
-      font-family: var(--font-ui);
-      color: var(--text-dim);
+      font-size: 0.7rem;
+      font-family: var(--font-mono);
+      color: var(--color-muted-foreground);
       font-weight: 500;
+      padding-top: 0.35rem;
+      letter-spacing: 0.05em;
     }}
 
     .live-status-pill {{
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 0.35rem 0.8rem;
-      border-radius: 0.5rem;
-      border: 1px solid var(--panel-border);
-      font-size: 0.75rem;
+      gap: var(--space-sm);
+      background: rgba(0, 0, 0, 0.35);
+      padding: 0.3rem 0.85rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--color-border);
+      font-size: 0.72rem;
+      font-family: var(--font-ui);
+      font-weight: 500;
     }}
 
     .status-dot {{
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
-      background: #64748b;
-      transition: background 0.3s;
+      background: var(--color-muted-foreground);
+      transition: background var(--transition), box-shadow var(--transition);
     }}
     .status-dot.playing {{
-      background: #10b981;
-      box-shadow: 0 0 10px #10b981;
+      background: var(--color-accent);
+      box-shadow: 0 0 12px var(--color-accent);
     }}
     .status-dot.paused {{
-      background: #f59e0b;
-      box-shadow: 0 0 10px #f59e0b;
+      background: var(--ink-amber);
+      box-shadow: 0 0 12px var(--ink-amber);
+    }}
+    .status-dot.idle {{
+      background: var(--color-muted-foreground);
     }}
 
     /* Canvas Area */
     .canvas-viewport {{
       flex: 1;
-      min-height: 420px;
+      min-height: 520px;
       position: relative;
-      background: radial-gradient(circle at center, rgba(17, 24, 39, 0.9) 0%, rgba(10, 15, 26, 0.95) 100%);
+      background: radial-gradient(circle at center, rgba(17, 24, 39, 0.8) 0%, rgba(8, 12, 20, 0.95) 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       padding: 2rem;
       overflow: hidden;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
     }}
 
     /* Grid lines in canvas */
@@ -243,16 +324,19 @@ def generate_player_html():
       position: absolute;
       inset: 0;
       background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 30px 30px;
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
       pointer-events: none;
+      border-radius: var(--radius-lg);
+      mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
     }}
 
     #midadContainer {{
       width: 100%;
       height: 100%;
-      min-height: 380px;
+      min-height: 460px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -262,56 +346,75 @@ def generate_player_html():
 
     /* SVG Stroke Glow */
     .glow-effect .midad-stroke {{
-      filter: drop-shadow(0 0 8px currentColor);
+      filter: drop-shadow(0 0 10px currentColor);
+    }}
+
+    /* Empty stage state */
+    .empty-stage {{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      color: var(--color-muted-foreground);
+      text-align: center;
+      padding: var(--space-xl);
+    }}
+
+    .empty-stage svg {{
+      width: 64px;
+      height: 64px;
+      opacity: 0.5;
     }}
 
     /* Timeline & Playback Bar */
     .playback-toolbar {{
-      padding: 1.25rem 1.5rem;
-      background: rgba(0, 0, 0, 0.35);
-      border-top: 1px solid var(--card-border);
+      padding: var(--space-lg);
+      background: rgba(0, 0, 0, 0.25);
+      border-top: 1px solid var(--color-border);
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: var(--space-lg);
     }}
 
     .scrubber-row {{
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: var(--space-md);
     }}
 
     .time-label {{
-      font-size: 0.78rem;
-      font-family: var(--font-display);
-      color: var(--text-muted);
-      min-width: 65px;
-      direction: ltr;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--color-muted-foreground);
+      min-width: 56px;
       text-align: center;
+      direction: ltr;
     }}
 
     .scrubber-slider {{
       flex: 1;
       -webkit-appearance: none;
-      height: 6px;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.12);
+      height: 5px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.1);
       outline: none;
       cursor: pointer;
-      position: relative;
     }}
     .scrubber-slider::-webkit-slider-thumb {{
       -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
-      background: var(--accent-cyan);
-      box-shadow: 0 0 12px var(--accent-cyan);
+      background: var(--color-accent);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
       cursor: pointer;
-      transition: transform 0.1s;
+      transition: transform var(--transition);
     }}
     .scrubber-slider::-webkit-slider-thumb:hover {{
-      transform: scale(1.25);
+      transform: scale(1.2);
+    }}
+    .scrubber-slider:focus-visible::-webkit-slider-thumb {{
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.25);
     }}
 
     .controls-row {{
@@ -319,82 +422,128 @@ def generate_player_html():
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 0.8rem;
+      gap: var(--space-sm);
     }}
 
     .btn-group {{
       display: flex;
-      gap: 0.5rem;
+      gap: var(--space-sm);
     }}
 
     .btn {{
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid var(--panel-border);
-      color: var(--text-main);
-      padding: 0.5rem 1.1rem;
-      border-radius: 0.6rem;
-      font-size: 0.82rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--color-border);
+      color: var(--color-foreground);
+      padding: 0.55rem 1.1rem;
+      border-radius: var(--radius-md);
+      font-size: 0.8rem;
       font-weight: 600;
+      font-family: var(--font-ui);
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      transition: all 0.2s;
+      gap: var(--space-sm);
+      transition: all var(--transition);
+      line-height: 1;
     }}
     .btn:hover {{
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.1);
       border-color: rgba(255, 255, 255, 0.2);
       transform: translateY(-1px);
     }}
+    .btn:focus-visible {{
+      border-color: var(--color-ring);
+    }}
+    .btn svg {{
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }}
     .btn.primary {{
-      background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
-      border-color: rgba(6, 182, 212, 0.4);
-      color: #ffffff;
-      box-shadow: 0 4px 15px var(--accent-glow);
+      background: var(--color-accent);
+      border-color: transparent;
+      color: var(--color-on-accent);
+      box-shadow: 0 0 0 rgba(34, 197, 94, 0);
     }}
     .btn.primary:hover {{
-      box-shadow: 0 6px 20px rgba(6, 182, 212, 0.45);
+      background: #29d470;
+      box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+    }}
+    .btn.primary:active {{
+      transform: translateY(0);
+    }}
+    .btn.active {{
+      background: var(--color-accent);
+      border-color: transparent;
+      color: var(--color-on-accent);
+      box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.2);
+    }}
+    .btn.secondary {{
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--color-muted-foreground);
+    }}
+    .btn.secondary:hover {{
+      color: var(--color-foreground);
+      border-color: var(--color-border);
     }}
 
     /* Sidebar Panel */
     .sidebar {{
       display: flex;
       flex-direction: column;
-      gap: 1.25rem;
+      gap: var(--space-lg);
     }}
 
     .panel-card {{
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 1rem;
-      padding: 1.25rem;
-      backdrop-filter: blur(14px);
+      background: var(--color-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-lg);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow-lg);
     }}
 
     .panel-title {{
-      font-size: 0.88rem;
+      font-size: 0.8rem;
       font-weight: 700;
-      color: #f1f5f9;
-      margin-bottom: 0.9rem;
+      color: var(--color-foreground);
+      margin-bottom: var(--space-md);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      letter-spacing: 0.05em;
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+    }}
+
+    .panel-title .count {{
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--color-muted-foreground);
+      background: var(--color-muted);
+      padding: 0.1rem 0.55rem;
+      border-radius: var(--radius-full);
     }}
 
     .word-picker-select {{
       width: 100%;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid var(--panel-border);
-      border-radius: 0.6rem;
-      color: var(--text-main);
+      background: rgba(2, 6, 12, 0.6);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      color: var(--color-foreground);
       padding: 0.6rem 0.8rem;
       font-family: var(--font-arabic);
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       cursor: pointer;
       outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }}
+    .word-picker-select:focus-visible {{
+      border-color: var(--color-ring);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
     }}
     .word-picker-select option {{
-      background: #0f172a;
+      background: #0b1120;
       color: #f8fafc;
     }}
 
@@ -402,53 +551,66 @@ def generate_player_html():
     .quick-chips {{
       display: flex;
       flex-wrap: wrap;
-      gap: 0.4rem;
-      margin-top: 0.75rem;
+      gap: var(--space-sm);
+      margin-top: var(--space-sm);
     }}
 
     .chip {{
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--card-border);
-      border-radius: 0.4rem;
-      padding: 0.25rem 0.65rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 0.3rem 0.75rem;
       font-family: var(--font-arabic);
       font-size: 0.95rem;
-      color: var(--text-muted);
+      color: var(--color-muted-foreground);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all var(--transition);
+      line-height: 1.2;
     }}
-    .chip:hover, .chip.active {{
+    .chip:hover {{
+      background: rgba(6, 182, 212, 0.1);
+      border-color: var(--ink-cyan);
+      color: var(--ink-cyan);
+      transform: translateY(-1px);
+    }}
+    .chip.active {{
       background: rgba(6, 182, 212, 0.15);
-      border-color: var(--accent-cyan);
-      color: #38bdf8;
+      border-color: var(--ink-cyan);
+      color: var(--ink-cyan);
+      box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.15);
+    }}
+    .chip:focus-visible {{
+      outline: 2px solid var(--color-ring);
+      outline-offset: 1px;
     }}
 
     /* Control Sliders in Sidebar */
     .setting-group {{
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
-      margin-bottom: 0.85rem;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
     }}
 
     .setting-label {{
       display: flex;
       justify-content: space-between;
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      font-size: 0.72rem;
+      color: var(--color-muted-foreground);
+      font-family: var(--font-mono);
     }}
 
     .setting-value {{
       font-weight: 600;
-      color: #38bdf8;
-      font-family: var(--font-display);
+      color: var(--ink-cyan);
+      font-family: var(--font-mono);
     }}
 
     .slider {{
       -webkit-appearance: none;
-      height: 5px;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.1);
+      height: 4px;
+      border-radius: var(--radius-full);
+      background: rgba(255, 255, 255, 0.08);
       outline: none;
       cursor: pointer;
     }}
@@ -457,55 +619,70 @@ def generate_player_html():
       width: 14px;
       height: 14px;
       border-radius: 50%;
-      background: #38bdf8;
+      background: var(--ink-cyan);
       cursor: pointer;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }}
+    .slider::-webkit-slider-thumb:hover {{
+      transform: scale(1.2);
+    }}
+    .slider:focus-visible::-webkit-slider-thumb {{
+      box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.25);
     }}
 
     /* Palette colors */
     .color-palette {{
       display: flex;
-      gap: 0.5rem;
-      margin-top: 0.3rem;
+      gap: var(--space-sm);
+      margin-top: var(--space-xs);
     }}
 
     .color-swatch {{
-      width: 24px;
-      height: 24px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       cursor: pointer;
       border: 2px solid transparent;
-      transition: transform 0.15s, border-color 0.15s;
+      transition: transform var(--transition), border-color var(--transition);
     }}
-    .color-swatch:hover, .color-swatch.active {{
+    .color-swatch:hover {{
+      transform: scale(1.15);
+    }}
+    .color-swatch.active {{
       transform: scale(1.2);
       border-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    }}
+    .color-swatch:focus-visible {{
+      outline: 2px solid var(--color-ring);
+      outline-offset: 1px;
     }}
 
     /* Event Log List */
     .event-log {{
-      max-height: 160px;
+      max-height: 150px;
       overflow-y: auto;
       background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--panel-border);
-      border-radius: 0.5rem;
-      padding: 0.5rem;
-      font-family: monospace;
-      font-size: 0.7rem;
-      color: var(--text-dim);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-sm);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--color-muted-foreground);
       display: flex;
       flex-direction: column-reverse;
-      gap: 0.25rem;
+      gap: var(--space-xs);
     }}
     .log-item {{
       padding: 0.15rem 0.3rem;
-      border-radius: 0.2rem;
-      border-right: 2px solid var(--accent-cyan);
+      border-radius: 2px;
+      border-right: 2px solid var(--ink-cyan);
       background: rgba(255, 255, 255, 0.02);
       color: #cbd5e1;
     }}
     .log-item.complete {{
-      border-right-color: #10b981;
-      color: #34d399;
+      border-right-color: var(--color-accent);
+      color: var(--color-accent);
     }}
   </style>
 </head>
@@ -513,16 +690,22 @@ def generate_player_html():
 
   <header>
     <div class="brand">
-      <div class="logo">مِداد</div>
-      <div>
-        <div class="brand-title">MIDAD ENGINE</div>
-        <div class="brand-subtitle">Arabic Cursive Handwriting Animation Runtime</div>
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+          <path d="M2 17l10 5 10-5"/>
+          <path d="M2 12l10 5 10-5"/>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <div class="brand-title">مِداد</div>
+        <div class="brand-subtitle">Arabic Handwriting Engine</div>
       </div>
     </div>
     <div class="header-badges">
-      <span class="badge emerald">✓ Continuous C0/G1 Welds</span>
-      <span class="badge">Midad API Ready</span>
-      <span class="badge">50 Words Corpus</span>
+      <span class="badge">C0 / G1 Welds</span>
+      <span class="badge">Midad API</span>
+      <span class="badge">50 Words</span>
     </div>
   </header>
 
@@ -542,6 +725,13 @@ def generate_player_html():
 
       <div class="canvas-viewport" id="canvasViewport">
         <div id="midadContainer"></div>
+        <div class="empty-stage" id="emptyStage" style="display:none;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="3" y1="3" x2="21" y2="21"/>
+          </svg>
+          <p>Select a word to begin playback</p>
+        </div>
       </div>
 
       <div class="playback-toolbar">
@@ -553,13 +743,28 @@ def generate_player_html():
 
         <div class="controls-row">
           <div class="btn-group">
-            <button class="btn primary" id="playPauseBtn">❚❚ إيقاف مؤقت</button>
-            <button class="btn" id="restartBtn">↺ إعادة التشغيل</button>
-            <button class="btn" id="prevWordBtn">السابق ◀</button>
-            <button class="btn" id="nextWordBtn">▶ التالي</button>
+            <button class="btn primary" id="playPauseBtn" aria-label="إيقاف مؤقت">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              <span>إيقاف مؤقت</span>
+            </button>
+            <button class="btn secondary" id="restartBtn" aria-label="إعادة التشغيل">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v16a3 3 0 0 0 3 3h16"/><polyline points="1 4 1 20 5 16"/><polyline points="23 4 23 20 19 16"/></svg>
+              <span>إعادة التشغيل</span>
+            </button>
+            <button class="btn secondary" id="prevWordBtn" aria-label="السابقة">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+              <span>السابقة</span>
+            </button>
+            <button class="btn secondary" id="nextWordBtn" aria-label="التالي">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              <span>التالي</span>
+            </button>
           </div>
           <div class="btn-group">
-            <button class="btn" id="toggleGlowBtn">✨ إضاءة (Glow)</button>
+            <button class="btn secondary" id="toggleGlowBtn" aria-label="إضاءة (Glow)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>إضاءة</span>
+            </button>
           </div>
         </div>
       </div>
@@ -569,8 +774,11 @@ def generate_player_html():
     <div class="sidebar">
       <!-- Word Selector -->
       <div class="panel-card">
-        <div class="panel-title">اختيار الكلمة (Select Word)</div>
-        <select class="word-picker-select" id="wordSelect">
+        <div class="panel-title">
+          <span>اختيار الكلمة</span>
+          <span class="count" id="wordCount">50</span>
+        </div>
+        <select class="word-picker-select" id="wordSelect" aria-label="اختر كلمة">
           <!-- Populated dynamically -->
         </select>
         <div class="quick-chips" id="quickChips">
@@ -580,11 +788,13 @@ def generate_player_html():
 
       <!-- Animation Settings -->
       <div class="panel-card">
-        <div class="panel-title">إعدادات الحركة (Animation Settings)</div>
+        <div class="panel-title">
+          <span>إعدادات الحركة</span>
+        </div>
 
         <div class="setting-group">
           <div class="setting-label">
-            <span>سرعة الرسم (Speed)</span>
+            <span>سرعة الرسم</span>
             <span class="setting-value" id="speedVal">1.0x</span>
           </div>
           <input type="range" class="slider" id="speedSlider" min="25" max="300" value="100">
@@ -592,7 +802,7 @@ def generate_player_html():
 
         <div class="setting-group">
           <div class="setting-label">
-            <span>سمك الخط (Stroke Width)</span>
+            <span>سمك الخط</span>
             <span class="setting-value" id="strokeVal">28 px</span>
           </div>
           <input type="range" class="slider" id="strokeSlider" min="12" max="55" value="28">
@@ -600,15 +810,15 @@ def generate_player_html():
 
         <div class="setting-group">
           <div class="setting-label">
-            <span>لون الحبر (Ink Color)</span>
+            <span>لون الحبر</span>
           </div>
           <div class="color-palette" id="colorPalette">
-            <div class="color-swatch active" data-color="#06b6d4" style="background:#06b6d4;" title="Cyan"></div>
-            <div class="color-swatch" data-color="#10b981" style="background:#10b981;" title="Emerald"></div>
-            <div class="color-swatch" data-color="#f59e0b" style="background:#f59e0b;" title="Amber"></div>
-            <div class="color-swatch" data-color="#a855f7" style="background:#a855f7;" title="Purple"></div>
-            <div class="color-swatch" data-color="#f43f5e" style="background:#f43f5e;" title="Rose"></div>
-            <div class="color-swatch" data-color="#f8fafc" style="background:#f8fafc;" title="White"></div>
+            <button class="color-swatch active" data-color="#06b6d4" style="background:#06b6d4;" type="button" title="Cyan" aria-pressed="true"></button>
+            <button class="color-swatch" data-color="#10b981" style="background:#10b981;" type="button" title="Emerald" aria-pressed="false"></button>
+            <button class="color-swatch" data-color="#f59e0b" style="background:#f59e0b;" type="button" title="Amber" aria-pressed="false"></button>
+            <button class="color-swatch" data-color="#a855f7" style="background:#a855f7;" type="button" title="Purple" aria-pressed="false"></button>
+            <button class="color-swatch" data-color="#f43f5e" style="background:#f43f5e;" type="button" title="Rose" aria-pressed="false"></button>
+            <button class="color-swatch" data-color="#f8fafc" style="background:#f8fafc;" type="button" title="White" aria-pressed="false"></button>
           </div>
         </div>
       </div>
@@ -616,8 +826,8 @@ def generate_player_html():
       <!-- Diagnostics & Events -->
       <div class="panel-card">
         <div class="panel-title">
-          <span>سجل الأحداث (Event Stream)</span>
-          <span style="font-size:0.65rem; color:var(--text-dim);" id="eventCountBadge">0 أحداث</span>
+          <span>سجل الأحداث</span>
+          <span class="count" id="eventCountBadge">0 أحداث</span>
         </div>
         <div class="event-log" id="eventLog">
           <div class="log-item">Engine initialized and ready</div>
@@ -704,6 +914,10 @@ def generate_player_html():
       wordHeading.textContent = w.text;
       wordIndexTag.textContent = `#${{idx + 1}} من ${{WORDS.length}} (${{w.paws.length}} PAWs)`;
       wordSelect.value = idx;
+      document.getElementById('wordCount').textContent = WORDS.length;
+
+      const emptyStage = document.getElementById('emptyStage');
+      if (emptyStage) emptyStage.style.display = 'none';
 
       document.querySelectorAll('.chip').forEach(c => {{
         c.classList.toggle('active', c.textContent.trim() === w.text);
@@ -733,7 +947,7 @@ def generate_player_html():
       midadInstance.on('start', (d) => {{
         statusDot.className = 'status-dot playing';
         statusText.textContent = 'Playing';
-        playPauseBtn.textContent = '❚❚ إيقاف مؤقت';
+        playPauseBtn.textContent = 'إيقاف مؤقت';
         if (d?.duration) {{
           totalTimeLabel.textContent = `${{d.duration.toFixed(2)}}s`;
         }}
@@ -755,7 +969,7 @@ def generate_player_html():
       midadInstance.on('complete', () => {{
         statusDot.className = 'status-dot paused';
         statusText.textContent = 'Completed';
-        playPauseBtn.textContent = '↺ إعادة البدء';
+        playPauseBtn.textContent = 'إعادة البدء';
         addLog(`Completed '${{targetWord.text}}'`, true);
       }});
     }}
@@ -784,12 +998,12 @@ def generate_player_html():
         midadInstance.pause();
         statusDot.className = 'status-dot paused';
         statusText.textContent = 'Paused';
-        playPauseBtn.textContent = '▶ استئناف';
+        playPauseBtn.textContent = 'استئناف';
       }} else if (midadInstance.state === 'paused') {{
         midadInstance.resume();
         statusDot.className = 'status-dot playing';
         statusText.textContent = 'Playing';
-        playPauseBtn.textContent = '❚❚ إيقاف مؤقت';
+        playPauseBtn.textContent = 'إيقاف مؤقت';
       }} else {{
         midadInstance.restart();
       }}
@@ -842,8 +1056,7 @@ def generate_player_html():
     toggleGlowBtn.onclick = () => {{
       isGlow = !isGlow;
       container.classList.toggle('glow-effect', isGlow);
-      toggleGlowBtn.style.borderColor = isGlow ? 'var(--accent-cyan)' : '';
-      toggleGlowBtn.style.color = isGlow ? '#38bdf8' : '';
+      toggleGlowBtn.classList.toggle('active', isGlow);
     }};
 
     // Initial Load
