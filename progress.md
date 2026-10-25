@@ -169,16 +169,55 @@
 
 ---
 
-## Current Status: Milestone 5 Complete & Ready for Operator Demonstration 🚀
-- **Visual Regression Suite**: `engine/tests/milestone5_visual.spec.ts` (10/10 Playwright tests passing)
-- **Interactive Showcase**: `debugger/midad_player.html`
-- **Visual Comparison Artifacts**: `engine/tests/artifacts/milestone5_visual/` (40 side-by-side images)
+### 11. Milestone 6: Public API, Font Packaging & Documentation (COMPLETE ✅)
+- **Vara.js-Compatible Public API (`engine/src/midad.ts`, `engine/src/types.ts`)**:
+  - Full playback controls: `play()`, `pause()`, `resume()`, `restart()`, `reset()`, `seek(progress)`, `get(index)`, and `state` getter.
+  - Convenience callback helpers: `midad.ready(callback)` and `midad.animationEnd(callback)`.
+  - Event emitter (`.on()`, `.once()`, `.off()`) supporting `ready`, `start`, `pawStart`, `pawEnd`, `strokeStart`, `strokeEnd`, `progress`, `complete`, `animationEnd`, and `warning`.
+  - BiDi & unknown word fallback: microtask-deferred `warning` event dispatch with non-crashing fallback rendering.
+- **Production Font Packaging Pipeline (`pipeline/src/packager.py`)**:
+  - Implemented automated font packaging pipeline with RDP (Ramer-Douglas-Peucker) polyline simplification ($\epsilon = 0.8$).
+  - Eliminated redundant duplicate timeline structures, converted delayed stroke points to compact SVG path syntax, and rounded coordinates to 1 decimal place.
+  - Packaging performance:
+    - Raw size: **159 KB** (reduced from 3.1 MB).
+    - Gzipped size: **48.8 KB** (strictly exceeds the $< 95\text{ KB}$ gate).
+    - Output location: `engine/dist/fonts/noto_naskh_50.json` and `fixtures/fonts/midad_naskh_50.json`.
+- **Engine Distribution Bundle Sizes**:
+  - ES module: `dist/midad.es.js` (28.63 kB raw / **8.22 kB gzipped** — strictly $< 25\text{ KB}$).
+  - UMD module: `dist/midad.umd.js` (20.06 kB raw / **6.89 kB gzipped** — strictly $< 25\text{ KB}$).
+  - TypeScript compilation (`tsc --noEmit`): **0 errors**.
+- **Public API Unit Test Suite (`engine/tests/api.test.ts`)**:
+  - 17 test cases verifying:
+    - Container resolution (HTMLElement, DOM selector string, missing element error).
+    - Font loading (in-memory `FontData`, single `WordData`, inline JSON string).
+    - Text specification normalization and multi-word queue.
+    - Playback controls (`play`, `pause`, `resume`, `reset`, `restart`, `seek`, `state`, `get`).
+    - Event emitter and callbacks (`ready`, `animationEnd`, `on`, `once`, `off`).
+    - BiDi fallback and `WORD_NOT_FOUND` warning emission.
+    - Package size gates (< 25 KB gzipped engine, < 95 KB gzipped font).
+  - Verified via Vitest: **17 passed in 154ms**.
+- **Root Documentation (`README.md`)**:
+  - Complete, comprehensive documentation at repository root covering:
+    - Feature summary, architecture diagram, and mathematical invariants.
+    - Quickstart guide for browser script tags and ES module bundlers.
+    - Full Vara.js-compatible API reference (options, text specs, methods, events).
+    - Showcase and interactive debuggers (`midad_player.html`, `milestone3_joints.html`, `milestone2_audit.html`).
+    - Monorepo directory structure and test execution instructions.
 
 ---
 
-## Next Steps / Future Enhancements
-- Expandable runtime HarfBuzz WASM shaping for arbitrary user-typed Arabic text beyond the canonical 50-word corpus.
-- Calligraphic ribbon / variable-width stroke expansion.
+## Current Status: ALL MILESTONES (1–6) FULLY IMPLEMENTED & VERIFIED 🚀
+- **Public API & Packaging Suite**: `engine/tests/api.test.ts` (17/17 Vitest unit tests passing)
+- **Visual Regression Suite**: `engine/tests/milestone5_visual.spec.ts` (10/10 Playwright tests passing)
+- **Mathematical Invariant Suites**: `test_day1_rules.py`, `test_milestone1_topology.py`, `test_milestone2_kinematics.py`, `test_milestone3_welding.py` (344 Python tests passing)
+- **Interactive Showcases**:
+  - `debugger/midad_player.html`
+  - `debugger/milestone3_joints.html`
+  - `debugger/milestone2_audit.html`
+- **Zero-Dependency Production Bundles**:
+  - `engine/dist/midad.es.js` (8.22 kB gzipped)
+  - `engine/dist/midad.umd.js` (6.89 kB gzipped)
+  - `engine/dist/fonts/noto_naskh_50.json` (48.8 kB gzipped)
 
 ---
 
@@ -189,12 +228,12 @@
    timeout 10s git status
    timeout 10s git log -n 5 --oneline
    ```
-2. Verify Python pipeline tests:
+2. Verify Engine Vitest tests:
    ```bash
-   timeout 30s /home/ubuntu/workspace/midad/pipeline/.venv/bin/pytest pipeline/tests/test_milestone2_kinematics.py
+   cd /home/ubuntu/workspace/midad/engine && npx vitest run tests/api.test.ts
    ```
-3. Inspect Milestone 2 Audit visualizer:
+3. Verify production build:
    ```bash
-   ls -lh /home/ubuntu/workspace/midad/debugger/milestone2_audit.html
+   cd /home/ubuntu/workspace/midad/engine && npm run typecheck && npm run build
    ```
 

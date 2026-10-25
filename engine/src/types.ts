@@ -140,6 +140,8 @@ export type MidadEventType =
   | 'strokeStart'
   | 'strokeEnd'
   | 'progress'
-  | 'complete';
+  | 'complete'
+  | 'animationEnd'
+  | 'warning';
 
 export type MidadEventHandler = (data?: any) => void;

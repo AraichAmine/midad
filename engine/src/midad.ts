@@ -141,6 +141,15 @@ export class Midad {
       const wordData = wordsMap.get(textSpec.text);
       if (!wordData) {
         console.warn(`Midad: Word '${textSpec.text}' not found in font dictionary; using closest fallback`);
+        // Defer the warning event so listeners registered immediately after
+        // construction (e.g. in a test) can still receive it.
+        queueMicrotask(() => {
+          this.emit('warning', {
+            code: 'WORD_NOT_FOUND',
+            text: textSpec.text,
+            message: `Word '${textSpec.text}' not found in font dictionary; using closest fallback`,
+          });
+        });
         // Use first word as graceful fallback if exact word not found
         const fallback = this.fontData.words[0];
         if (fallback) {
@@ -231,6 +240,13 @@ export class Midad {
 
         // Handle queued word progression
         if (eventName === 'complete') {
+          // Also dispatch Vara.js compatible animationEnd event
+          this.emit('animationEnd', {
+            wordIndex: index,
+            wordText: textSpec?.text,
+            ...data,
+          });
+
           if (this.options.queued && index + 1 < this.scheduledWords.length) {
             this.currentWordIndex = index + 1;
             // Short delay before next word
@@ -261,6 +277,18 @@ export class Midad {
   }
 
   /**
+   * Reset animation back to initial state.
+   */
+  public reset(wordIndex?: number): this {
+    if (typeof wordIndex === 'number' && wordIndex >= 0 && wordIndex < this.scheduledWords.length) {
+      this.currentWordIndex = wordIndex;
+      this.mountWordRenderer(this.currentWordIndex);
+    }
+    this.renderer?.reset();
+    return this;
+  }
+
+  /**
    * Restart current or specified word animation from beginning.
    */
   public restart(wordIndex?: number): this {
@@ -268,6 +296,23 @@ export class Midad {
     this.play(targetIndex);
     this.renderer?.restart();
     return this;
+  }
+
+  /**
+   * Vara.js-compatible helper: register ready callback.
+   */
+  public ready(handler: (data?: any) => void): this {
+    return this.on('ready', handler);
+  }
+
+  /**
+   * Vara.js-compatible helper: register animation complete/end callback.
+   */
+  public animationEnd(handler: (wordIndex: number, textSpec?: MidadTextSpec) => void): this {
+    return this.on('animationEnd', (data) => {
+      const idx = data?.wordIndex ?? this.currentWordIndex;
+      handler(idx, this.texts[idx]);
+    });
   }
 
   /**
