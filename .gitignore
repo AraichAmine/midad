@@ -11,4 +11,5 @@ test-results/
 
 # Internal development notes & agent configurations
 progress.md
+opencode_task.md
 .opencode/
