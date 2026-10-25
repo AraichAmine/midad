@@ -23,7 +23,7 @@ All contributors are expected to adhere to our [Code of Conduct](file:///home/ub
 ### Getting Started:
 1. Clone the repository:
    ```bash
-   git clone https://github.com/midad-engine/midad.git
+   git clone https://github.com/AriachAmine/midad.git
    cd midad
    ```
 2. Install Engine dependencies:

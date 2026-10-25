@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "description": "Midad — Arabic handwriting animation engine monorepo",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AriachAmine/midad.git"
+  },
   "scripts": {
     "dev": "vite --port 5173 --open /debugger/midad_player.html",
     "build": "npm --prefix engine run build && pipeline/.venv/bin/python pipeline/src/packager.py",

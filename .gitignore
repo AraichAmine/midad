@@ -5,3 +5,10 @@ __pycache__/
 dist/
 .playwright/
 test-results/
+*.tgz
+*.log
+.DS_Store
+
+# Internal development notes & agent configurations
+progress.md
+.opencode/

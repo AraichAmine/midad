@@ -94,7 +94,7 @@ Arabic script presents unique mathematical challenges for animated handwriting e
 ### 2. Modern ES Modules / NPM
 
 ```typescript
-import { Midad } from 'midad-engine';
+import { Midad } from 'midad';
 import fontData from './fonts/noto_naskh_50.json';
 
 const container = document.getElementById('arabic-canvas')!;
