@@ -10,6 +10,7 @@ JSON distribution files with:
 
 Target:
 - Production font JSON < 95 KB gzipped.
+- Production glyphs catalog < 45 KB gzipped.
 """
 
 from __future__ import annotations
@@ -27,6 +28,10 @@ FIXTURES_DIR = REPO_ROOT / "fixtures"
 GOLDEN_WORDS_PATH = FIXTURES_DIR / "golden" / "welded_50_words.json"
 PACKAGED_FONT_PATH = FIXTURES_DIR / "fonts" / "midad_naskh_50.json"
 DIST_FONT_PATH = REPO_ROOT / "engine" / "dist" / "fonts" / "noto_naskh_50.json"
+
+DIRECTED_GLYPHS_PATH = FIXTURES_DIR / "skeletons" / "directed_glyphs.json"
+PACKAGED_GLYPHS_PATH = FIXTURES_DIR / "fonts" / "midad_naskh_glyphs.json"
+DIST_GLYPHS_PATH = REPO_ROOT / "engine" / "dist" / "fonts" / "noto_naskh_glyphs.json"
 
 
 def compact_number(val: float, precision: int = 1) -> float | int:
@@ -46,6 +51,25 @@ def parse_svg_path_points(d: str) -> list[list[float]]:
     return pts
 
 
+def simplify_points(
+    points: list[list[float]],
+    tolerance: float = 0.8,
+    precision: int = 1,
+) -> list[list[float | int]]:
+    """Simplify point sequence via RDP and round coordinates."""
+    if not points:
+        return []
+    if len(points) >= 3 and tolerance > 0.0:
+        try:
+            ls = LineString(points).simplify(tolerance, preserve_topology=False)
+            simp = list(ls.coords)
+        except Exception:
+            simp = points
+    else:
+        simp = points
+    return [[compact_number(pt[0], precision), compact_number(pt[1], precision)] for pt in simp]
+
+
 def simplify_and_format_path(
     points: list[list[float]],
     tolerance: float = 0.8,
@@ -55,28 +79,21 @@ def simplify_and_format_path(
     if not points:
         return "", 0.0
 
-    if len(points) >= 3 and tolerance > 0.0:
-        try:
-            ls = LineString(points).simplify(tolerance, preserve_topology=False)
-            simp_pts = list(ls.coords)
-        except Exception:
-            simp_pts = points
-    else:
-        simp_pts = points
+    simp_pts = simplify_points(points, tolerance=tolerance, precision=precision)
 
     # Compute length
     length = 0.0
     for i in range(1, len(simp_pts)):
-        dx = simp_pts[i][0] - simp_pts[i - 1][0]
-        dy = simp_pts[i][1] - simp_pts[i - 1][1]
+        dx = float(simp_pts[i][0]) - float(simp_pts[i - 1][0])
+        dy = float(simp_pts[i][1]) - float(simp_pts[i - 1][1])
         length += (dx * dx + dy * dy) ** 0.5
 
     # Format path string
     parts: list[str] = []
     first = simp_pts[0]
-    parts.append(f"M {compact_number(first[0], precision)} {compact_number(first[1], precision)}")
+    parts.append(f"M {first[0]} {first[1]}")
     for pt in simp_pts[1:]:
-        parts.append(f"L {compact_number(pt[0], precision)} {compact_number(pt[1], precision)}")
+        parts.append(f"L {pt[0]} {pt[1]}")
 
     return " ".join(parts), round(length, 1)
 
@@ -152,6 +169,58 @@ def package_font_data(
     }
 
 
+def package_glyphs_catalog(
+    catalog: dict[str, Any],
+    tolerance: float = 0.8,
+    precision: int = 1,
+) -> dict[str, Any]:
+    """Package 119 directed glyph skeletons into compact runtime catalog."""
+    packaged: dict[str, Any] = {}
+
+    glyphs = catalog.get("glyphs", catalog) if isinstance(catalog, dict) else {}
+    for key, glyph in glyphs.items():
+        trunk_strokes_out: list[dict[str, Any]] = []
+        for s in glyph.get("trunk_strokes", []):
+            pts = simplify_points(s.get("points", []), tolerance=tolerance, precision=precision)
+            trunk_strokes_out.append(
+                {
+                    "points": pts,
+                    "length": compact_number(s.get("length", 100.0), 1),
+                }
+            )
+
+        delayed_strokes_out: list[dict[str, Any]] = []
+        for ds in glyph.get("delayed_strokes", []):
+            pts = simplify_points(ds.get("points", []), tolerance=tolerance, precision=precision)
+            delayed_strokes_out.append(
+                {
+                    "role": ds.get("role", "dot"),
+                    "points": pts,
+                    "length": compact_number(ds.get("length", 50.0), 1),
+                    "attachment_s": compact_number(ds.get("attachment_s", 0.5), 3),
+                }
+            )
+
+        anchors = glyph.get("anchors", {})
+        anchors_out = {}
+        for akey, apt in anchors.items():
+            if apt is not None:
+                anchors_out[akey] = [
+                    compact_number(apt[0], precision),
+                    compact_number(apt[1], precision),
+                ]
+
+        packaged[key] = {
+            "char": glyph.get("char", ""),
+            "form": glyph.get("form", ""),
+            "trunk_strokes": trunk_strokes_out,
+            "delayed_strokes": delayed_strokes_out,
+            "anchors": anchors_out,
+        }
+
+    return packaged
+
+
 def export_packaged_font(
     source_path: Path = GOLDEN_WORDS_PATH,
     output_path: Path = PACKAGED_FONT_PATH,
@@ -181,10 +250,40 @@ def export_packaged_font(
     return output_path, raw_bytes, gz_bytes
 
 
+def export_packaged_glyphs(
+    source_path: Path = DIRECTED_GLYPHS_PATH,
+    output_path: Path = PACKAGED_GLYPHS_PATH,
+    tolerance: float = 0.8,
+    precision: int = 1,
+) -> tuple[Path, int, int]:
+    """Package directed glyphs JSON and return (output_path, raw_bytes, gzip_bytes)."""
+    with source_path.open("r", encoding="utf-8") as f:
+        source_data = json.load(f)
+
+    packaged = package_glyphs_catalog(source_data, tolerance=tolerance, precision=precision)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    raw_json = json.dumps(packaged, separators=(",", ":"), ensure_ascii=False)
+    raw_bytes = len(raw_json.encode("utf-8"))
+
+    with output_path.open("w", encoding="utf-8") as f:
+        f.write(raw_json)
+
+    gz_bytes = len(gzip.compress(raw_json.encode("utf-8")))
+
+    # Also copy to engine/dist/fonts
+    DIST_GLYPHS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with DIST_GLYPHS_PATH.open("w", encoding="utf-8") as f:
+        f.write(raw_json)
+
+    return output_path, raw_bytes, gz_bytes
+
+
 if __name__ == "__main__":
     out_path, raw_sz, gz_sz = export_packaged_font(tolerance=0.8, precision=1)
-    print(f"Packaged font written to: {out_path}")
-    print(f"Raw size:  {raw_sz / 1024:.2f} KB ({raw_sz} bytes)")
-    print(f"Gzip size: {gz_sz / 1024:.2f} KB ({gz_sz} bytes)")
-    assert gz_sz < 95 * 1024, f"Font package exceeds 95 KB gzipped: {gz_sz} bytes"
-    print("Verification PASSED: Font package is strictly < 95 KB gzipped!")
+    print(f"Packaged words font written to: {out_path}")
+    print(f"  Raw: {raw_sz / 1024:.2f} KB, Gzip: {gz_sz / 1024:.2f} KB")
+
+    gout_path, graw_sz, ggz_sz = export_packaged_glyphs(tolerance=0.8, precision=1)
+    print(f"Packaged glyphs catalog written to: {gout_path}")
+    print(f"  Raw: {graw_sz / 1024:.2f} KB, Gzip: {ggz_sz / 1024:.2f} KB")

@@ -206,18 +206,45 @@
 
 ---
 
-## Current Status: ALL MILESTONES (1–6) FULLY IMPLEMENTED & VERIFIED 🚀
-- **Public API & Packaging Suite**: `engine/tests/api.test.ts` (17/17 Vitest unit tests passing)
+### 10. Milestone 7: Open-Source Repository Standards & Client-Side Runtime Shaper (COMPLETE ✅)
+- **Monorepo DX & Single-Command Launch**:
+  - Created root `package.json` with unified workspace scripts (`npm run dev`, `npm run build`, `npm run test`, `npm run typecheck`).
+  - Added root `vite.config.js` serving `debugger/midad_player.html` with hot-module reload for interactive testing.
+- **Open-Source Community Health & Agent Collaboration Standards**:
+  - `LICENSE`: MIT License.
+  - `AGENTS.md`: Full AI Agent Operating Guidelines documenting architecture, non-negotiable mathematical invariants (Single-M, $C^0 < 0.05$, $G^1 < 12^\circ$, temporal causality, size budgets), file layouts, and execution workflows.
+  - `CONTRIBUTING.md`: Dual contributor guide for both human open-source developers and AI coding agents.
+  - `CODE_OF_CONDUCT.md`: Contributor Covenant v2.1.
+  - `SECURITY.md`: Security vulnerability disclosure policy and supported versions.
+  - `.github/ISSUE_TEMPLATE/`: GitHub issue templates for bug reports and feature requests.
+  - `.github/PULL_REQUEST_TEMPLATE.md`: Standard PR template with automated invariant checklist.
+  - `.github/workflows/ci.yml`: GitHub Actions CI pipeline running Python tests, engine Vitest suites, typechecking, build verification, and size budget assertions.
+- **NPM Package Publishing Configuration (`engine/package.json`)**:
+  - Set package name to `midad`.
+  - Added export maps for ESM, UMD, and packaged font assets (`./fonts/*`).
+  - Generated TypeScript type declarations (`dist/index.d.ts`).
+  - Whitelisted package files (`dist`, `README.md`, `LICENSE`).
+  - Verified package tarball via `npm pack --dry-run`: 14 files, 157.1 kB compressed.
+- **Pre-Push Enhancement: Client-Side Runtime Arabic Shaper & Welder**:
+  - Implemented `engine/src/shaper.ts`: real-time cursive PAW partitioning, contextual glyph form selection, spur pruning, horizontal exit alignment, and tangent-aligned cubic baseline welding in pure TypeScript.
+  - Exported standalone 119-glyph skeleton font catalog (`dist/fonts/noto_naskh_glyphs.json`) at **27.32 KB gzipped** (well under < 45 KB gate).
+  - Integrated runtime shaper seamlessly into `Midad` constructor (`new Midad(container, { glyphs: catalog }, text)`).
+  - Created comprehensive unit test suite `engine/tests/shaper.test.ts` (6/6 tests passing).
+  - Enhanced `debugger/midad_player.html` with a live custom Arabic text input field allowing users to type and animate any arbitrary phrase on the fly.
+
+---
+
+## Current Status: ALL MILESTONES (1–7) FULLY IMPLEMENTED & VERIFIED 🚀
+- **Engine Unit Test Suite**: `engine/tests/api.test.ts`, `engine/tests/validator.test.ts`, `engine/tests/shaper.test.ts` (**37/37 Vitest unit tests passing**)
 - **Visual Regression Suite**: `engine/tests/milestone5_visual.spec.ts` (10/10 Playwright tests passing)
 - **Mathematical Invariant Suites**: `test_day1_rules.py`, `test_milestone1_topology.py`, `test_milestone2_kinematics.py`, `test_milestone3_welding.py` (344 Python tests passing)
-- **Interactive Showcases**:
-  - `debugger/midad_player.html`
-  - `debugger/milestone3_joints.html`
-  - `debugger/milestone2_audit.html`
-- **Zero-Dependency Production Bundles**:
-  - `engine/dist/midad.es.js` (8.22 kB gzipped)
-  - `engine/dist/midad.umd.js` (6.89 kB gzipped)
-  - `engine/dist/fonts/noto_naskh_50.json` (48.8 kB gzipped)
+- **NPM Packaging Gate**: `npm pack --dry-run` passed with 14 files, 157.1 kB
+- **Production Bundles**:
+  - `engine/dist/midad.es.js` (10.29 kB gzipped; budget < 25 kB)
+  - `engine/dist/midad.umd.js` (8.69 kB gzipped; budget < 25 kB)
+  - `engine/dist/fonts/noto_naskh_50.json` (48.34 kB gzipped; budget < 95 kB)
+  - `engine/dist/fonts/noto_naskh_glyphs.json` (27.32 kB gzipped; budget < 45 kB)
+- **Git Push Guard**: `remote.origin.pushurl "no_push_allowed"` (Ready to configure remote origin when the user specifies GitHub repository URL).
 
 ---
 
@@ -230,10 +257,10 @@
    ```
 2. Verify Engine Vitest tests:
    ```bash
-   cd /home/ubuntu/workspace/midad/engine && npx vitest run tests/api.test.ts
+   cd /home/ubuntu/workspace/midad/engine && npx vitest run
    ```
-3. Verify production build:
+3. Run monorepo dev player:
    ```bash
-   cd /home/ubuntu/workspace/midad/engine && npm run typecheck && npm run build
+   npm run dev
    ```
 

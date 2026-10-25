@@ -1,12 +1,46 @@
 {
-  "name": "midad-engine",
+  "name": "midad",
   "version": "0.1.0",
+  "description": "Open-source Arabic cursive handwriting animation engine modeled after Vara.js",
   "type": "module",
+  "main": "./dist/midad.umd.js",
+  "module": "./dist/midad.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/midad.es.js",
+      "require": "./dist/midad.umd.js",
+      "default": "./dist/midad.es.js"
+    },
+    "./fonts/*": "./dist/fonts/*"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && tsc --emitDeclarationOnly",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "arabic",
+    "calligraphy",
+    "handwriting",
+    "animation",
+    "svg",
+    "vara",
+    "rtl",
+    "naskh"
+  ],
+  "author": "Midad Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/midad-engine/midad.git"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

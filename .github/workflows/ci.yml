@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  engine-tests:
+    name: Engine (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20.x, 22.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: 'engine/package-lock.json'
+
+      - name: Install Engine dependencies
+        run: |
+          cd engine
+          npm ci
+
+      - name: Run TypeScript typecheck
+        run: |
+          cd engine
+          npm run typecheck
+
+      - name: Run Vitest API & Unit suite
+        run: |
+          cd engine
+          npm run test:unit
+
+      - name: Build production bundles
+        run: |
+          cd engine
+          npm run build
+
+      - name: Verify Bundle Size Limits
+        run: |
+          node -e '
+            const fs = require("fs");
+            const zlib = require("zlib");
+            
+            function checkGz(file, maxKb) {
+              const buf = fs.readFileSync(file);
+              const gz = zlib.gzipSync(buf);
+              const kb = gz.length / 1024;
+              console.log(`${file}: ${kb.toFixed(2)} KB (limit: ${maxKb} KB)`);
+              if (kb > maxKb) throw new Error(`${file} exceeds ${maxKb} KB!`);
+            }
+            
+            checkGz("engine/dist/midad.es.js", 25);
+            checkGz("engine/dist/midad.umd.js", 25);
+            checkGz("engine/dist/fonts/noto_naskh_50.json", 95);
+          '
+
+  pipeline-tests:
+    name: Python Pipeline (Python 3.12)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install System Native Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libcairo2-dev libpango1.0-dev libharfbuzz-dev libfreetype6-dev fontconfig
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install fonttools uharfbuzz shapely scikit-image scipy numpy bezier pillow pytest
+
+      - name: Run Mathematical Invariant Pytests
+        run: |
+          pytest pipeline/tests/test_milestone3_welding.py
+          pytest pipeline/tests/test_milestone2_kinematics.py
+          pytest pipeline/tests/test_day1_rules.py

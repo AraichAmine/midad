@@ -550,6 +550,21 @@
         </div>
       </div>
 
+      <!-- Live Client-Side Arbitrary Text Shaper -->
+      <div class="panel-card" style="border: 1px solid rgba(6, 182, 212, 0.35); background: rgba(6, 182, 212, 0.06);">
+        <div class="panel-title" style="color: #38bdf8; display: flex; justify-content: space-between; align-items: center;">
+          <span>تشكيل نص مخصص (Arbitrary Text)</span>
+          <span class="badge" style="font-size: 0.65rem; padding: 0.15rem 0.5rem;">Live Shaper</span>
+        </div>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.6rem;">
+          <input type="text" id="customTextInput" placeholder="اكتب أي نص عربي هنا..." style="flex: 1; min-width: 0; padding: 0.55rem 0.75rem; background: rgba(15, 23, 42, 0.85); border: 1px solid var(--panel-border); border-radius: 8px; color: #f8fafc; font-family: var(--font-arabic); font-size: 1.05rem; text-align: right;" value="مرحبا بك في مداد">
+          <button class="btn btn-primary" id="renderCustomTextBtn" style="white-space: nowrap; padding: 0.55rem 0.9rem;">رسم ✦</button>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-dim); margin-top: 0.45rem; line-height: 1.4;">
+          تشكيل ولحام مسارات الخط العربي في المتصفح لحظياً دون سرفر.
+        </div>
+      </div>
+
       <!-- Animation Settings -->
       <div class="panel-card">
         <div class="panel-title">إعدادات الحركة (Animation Settings)</div>
@@ -818,6 +833,95 @@
       container.classList.toggle('glow-effect', isGlow);
       toggleGlowBtn.style.borderColor = isGlow ? 'var(--accent-cyan)' : '';
       toggleGlowBtn.style.color = isGlow ? '#38bdf8' : '';
+    };
+
+    // Live Client-Side Arbitrary Text Shaper
+    const customTextInput = document.getElementById('customTextInput');
+    const renderCustomTextBtn = document.getElementById('renderCustomTextBtn');
+
+    let glyphsCatalog = null;
+    async function loadGlyphsCatalog() {
+      if (glyphsCatalog) return glyphsCatalog;
+      try {
+        const resp = await fetch('/engine/dist/fonts/noto_naskh_glyphs.json');
+        if (resp.ok) {
+          const json = await resp.json();
+          glyphsCatalog = json.glyphs || json;
+          return glyphsCatalog;
+        }
+      } catch (err) {
+        console.warn('Could not fetch external glyphs catalog:', err);
+      }
+      return null;
+    }
+
+    renderCustomTextBtn.onclick = async () => {
+      const text = (customTextInput.value || '').trim();
+      if (!text) return;
+
+      renderCustomTextBtn.disabled = true;
+      renderCustomTextBtn.textContent = '...جاري التشكيل';
+
+      try {
+        const catalog = await loadGlyphsCatalog();
+        const fontSource = catalog ? { glyphs: catalog } : FONT_DATA;
+
+        wordHeading.textContent = text;
+        wordIndexTag.textContent = `نص حر تشكيل لحظي (${text.length} أحرف)`;
+
+        if (midadInstance) {
+          midadInstance.destroy();
+          midadInstance = null;
+        }
+        container.innerHTML = '';
+
+        const MidadClass = window.Midad?.Midad || window.Midad;
+        midadInstance = new MidadClass(container, fontSource, text, {
+          autoAnimation: true,
+          speed: 1500 * currentSpeedMultiplier,
+          strokeWidth: currentStrokeWidth,
+          color: currentColor,
+          pauseBetweenStrokes: 40,
+          pauseBetweenPaws: 100,
+        });
+
+        midadInstance.on('start', (d) => {
+          statusDot.className = 'status-dot playing';
+          statusText.textContent = 'Playing';
+          playPauseBtn.textContent = '❚❚ إيقاف مؤقت';
+          if (d?.duration) {
+            totalTimeLabel.textContent = `${d.duration.toFixed(2)}s`;
+          }
+          addLog(`Started custom text '${text}'`);
+        });
+
+        midadInstance.on('progress', (d) => {
+          if (!isSeeking && d) {
+            currentTimeLabel.textContent = `${d.currentTime.toFixed(2)}s`;
+            totalTimeLabel.textContent = `${d.totalDuration.toFixed(2)}s`;
+            scrubber.value = (d.progress * 100).toFixed(1);
+          }
+        });
+
+        midadInstance.on('complete', () => {
+          statusDot.className = 'status-dot paused';
+          statusText.textContent = 'Completed';
+          playPauseBtn.textContent = '↺ إعادة البدء';
+          addLog(`Completed custom text '${text}'`, true);
+        });
+      } catch (err) {
+        console.error('Custom text shaping failed:', err);
+        addLog(`Error shaping custom text: ${err.message}`);
+      } finally {
+        renderCustomTextBtn.disabled = false;
+        renderCustomTextBtn.textContent = 'رسم ✦';
+      }
+    };
+
+    customTextInput.onkeydown = (e) => {
+      if (e.key === 'Enter') {
+        renderCustomTextBtn.click();
+      }
     };
 
     // Initial Load

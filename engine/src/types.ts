@@ -92,7 +92,8 @@ export interface FontData {
   font?: string;
   total_glyphs?: number;
   num_words?: number;
-  words: WordData[];
+  words?: WordData[];
+  glyphs?: Record<string, any>;
 }
 
 /** Configuration options for the Midad engine. */

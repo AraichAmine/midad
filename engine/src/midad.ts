@@ -11,6 +11,7 @@
 
 import { buildTimeline, type ScheduledAnimation } from './scheduler';
 import { MidadRenderer } from './renderer';
+import { shapeArabicText } from './shaper';
 import type {
   FontData,
   MidadEventHandler,
@@ -107,12 +108,19 @@ export class Midad {
           throw new Error('Midad: fetch is not available to load font URL');
         }
       }
+    } else if ('glyphs' in fontSource) {
+      this.fontData = fontSource as FontData;
     } else if ('words' in fontSource) {
       this.fontData = fontSource as FontData;
     } else if ('paws' in fontSource) {
       // Single word object passed directly
       this.fontData = {
         words: [fontSource as WordData],
+      };
+    } else if (typeof fontSource === 'object' && fontSource !== null && !Array.isArray(fontSource)) {
+      // Direct glyph catalog object
+      this.fontData = {
+        glyphs: fontSource as Record<string, any>,
       };
     } else {
       throw new TypeError('Midad: Invalid font data format');
@@ -125,20 +133,30 @@ export class Midad {
    * Prepare animations once font data is loaded.
    */
   private onFontReady(): void {
-    if (!this.fontData || !this.fontData.words) {
-      throw new Error('Midad: Loaded font data contains no words array');
+    if (!this.fontData) {
+      throw new Error('Midad: Loaded font data is null');
     }
 
     // Map requested texts to word data
     const wordsMap = new Map<string, WordData>();
-    for (const w of this.fontData.words) {
+    for (const w of this.fontData.words || []) {
       wordsMap.set(w.text, w);
     }
 
     this.scheduledWords = [];
 
     for (const textSpec of this.texts) {
-      const wordData = wordsMap.get(textSpec.text);
+      let wordData = wordsMap.get(textSpec.text);
+
+      // Attempt runtime shaping if not in pre-rendered words dictionary
+      if (!wordData && this.fontData.glyphs) {
+        try {
+          wordData = shapeArabicText(textSpec.text, this.fontData.glyphs);
+        } catch (err) {
+          console.warn(`Midad: Runtime shaping failed for '${textSpec.text}':`, err);
+        }
+      }
+
       if (!wordData) {
         console.warn(`Midad: Word '${textSpec.text}' not found in font dictionary; using closest fallback`);
         // Defer the warning event so listeners registered immediately after
@@ -151,7 +169,7 @@ export class Midad {
           });
         });
         // Use first word as graceful fallback if exact word not found
-        const fallback = this.fontData.words[0];
+        const fallback = (this.fontData.words && this.fontData.words[0]) || null;
         if (fallback) {
           const scheduled = buildTimeline(fallback, {
             speed: textSpec.speed ?? this.options.speed,

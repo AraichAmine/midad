@@ -1,0 +1,17 @@
+{
+  "name": "midad-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Midad — Arabic handwriting animation engine monorepo",
+  "scripts": {
+    "dev": "vite --port 5173 --open /debugger/midad_player.html",
+    "build": "npm --prefix engine run build && pipeline/.venv/bin/python pipeline/src/packager.py",
+    "build:engine": "npm --prefix engine run build",
+    "test": "npm --prefix engine run test:unit",
+    "typecheck": "npm --prefix engine run typecheck",
+    "test:pipeline": "pipeline/.venv/bin/pytest pipeline/tests/test_milestone3_welding.py"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

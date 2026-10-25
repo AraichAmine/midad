@@ -16,3 +16,4 @@ export {
 } from './scheduler';
 export * from './types';
 export * from './validator';
+export * from './shaper';

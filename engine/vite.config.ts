@@ -10,6 +10,7 @@ export default defineConfig({
       fileName: (format) => `midad.${format}.js`,
     },
     outDir: 'dist',
+    emptyOutDir: false,
     sourcemap: true,
   },
 });
