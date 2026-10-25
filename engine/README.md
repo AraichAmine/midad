@@ -3,10 +3,11 @@
 <div align="center">
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
+[![npm version](https://img.shields.io/npm/v/midad.svg)](https://www.npmjs.com/package/midad)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)
 ![Python](https://img.shields.io/badge/Python-3.12-green)
-![Bundle Size](https://img.shields.io/badge/engine_bundle-%3C%208.1%20KB%20gzipped-brightgreen)
-![Font Size](https://img.shields.io/badge/packaged_font-%3C%2048.9%20KB%20gzipped-brightgreen)
+![Bundle Size](https://img.shields.io/badge/engine_bundle-%3C%208.7%20KB%20gzipped-brightgreen)
+![Font Size](https://img.shields.io/badge/packaged_font-%3C%2027.3%20KB%20gzipped-brightgreen)
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 
 **An open-source handwriting animation engine modeled after Vara.js, designed specifically for Arabic cursive script.**
@@ -37,6 +38,10 @@ Arabic script presents unique mathematical challenges for animated handwriting e
 
 ## Key Features
 
+- **Client-Side Runtime Shaper (Arbitrary Arabic Text)**:
+  - Dynamically shape and animate **any arbitrary Arabic text** in real-time directly in the browser.
+  - Runtime PAW cursive partitioning, contextual glyph form selection, and tangent-aligned cubic baseline welding.
+  - Animate infinite vocabulary using the compact glyph catalog (`noto_naskh_glyphs.json`, only 27.3 KB gz).
 - **Continuous RTL Baseline Welding**:
   - **Single-`M` Invariant**: Exactly one SVG `M` (moveto) command per PAW baseline trunk.
   - **$C^0$ Positional Continuity**: Joint distance $\Delta < 0.05$ font units.
@@ -50,13 +55,20 @@ Arabic script presents unique mathematical challenges for animated handwriting e
   - Methods: `play()`, `pause()`, `resume()`, `restart()`, `reset()`, `seek(progress)`, `get(index)`.
   - Callbacks & Events: `ready(cb)`, `animationEnd(cb)`, `.on()`, `.once()`, `.off()`.
 - **Ultra-Lightweight Production Distribution**:
-  - Standalone Engine: **8.04 KB gzipped** (27.59 KB raw ES / 19.47 KB raw UMD).
-  - 50-Word Packaged Font: **48.8 KB gzipped** (159 KB raw JSON).
+  - Standalone Engine: **8.69 KB gzipped** (35.8 KB raw ES / 24.9 KB raw UMD).
+  - Glyph Catalog: **27.3 KB gzipped** (125 KB raw JSON).
+  - 50-Word Corpus Font: **48.3 KB gzipped** (162 KB raw JSON).
   - **Zero runtime dependencies**.
 
 ---
 
 ## Quick Start
+
+### Installation
+
+```bash
+npm install midad
+```
 
 ### 1. Browser (UMD via Script Tag)
 
@@ -227,25 +239,24 @@ midad.on('warning', ({ code, message }) => {});
 4. **$G^1$ Continuity**: Joint tangent deviation $\Delta \theta = 0.00^\circ$ (threshold $< 12^\circ$).
 5. **Temporal Causality**: Delayed strokes are guaranteed to begin **strictly after** the parent PAW baseline completes.
 6. **Package Size Budgets**:
-   - Engine bundle: strictly $< 25\text{ KB}$ gzipped (actual: **8.04 KB**).
-   - Font package: strictly $< 95\text{ KB}$ gzipped (actual: **48.8 KB**).
+   - Engine bundle: strictly $< 25\text{ KB}$ gzipped (actual: **8.69 KB**).
+   - Glyph catalog: strictly $< 50\text{ KB}$ gzipped (actual: **27.3 KB**).
+   - 50-word font package: strictly $< 95\text{ KB}$ gzipped (actual: **48.3 KB**).
 
 ---
 
-## Interactive Debuggers
+## Interactive Player & Debugger
 
-The repository includes standalone HTML visual debuggers with zero external dependencies:
+The repository includes a standalone interactive showcase and debugger with zero external dependencies:
 
 | Tool | Path | Description |
 | :--- | :--- | :--- |
-| **Midad Web Player** | `debugger/midad_player.html` | Interactive showcase across 50 canonical Arabic words with scrubber timeline, play/pause, speed controls ($0.25\times$–$3.0\times$), ink palettes, and live event HUD. |
-| **Joints Inspector** | `debugger/milestone3_joints.html` | Visual audit of welded baseline joints, displaying green $C^0/G^1$ markers and delayed stroke attachments. |
-| **Calligraphy Auditor** | `debugger/milestone2_audit.html` | Ductus inspection across 119 Arabic glyph presentation forms with directional chevrons and loop classifiers. |
+| **Midad Web Player** | `debugger/midad_player.html` | Interactive player supporting 50 canonical Arabic words + **real-time live custom Arabic text shaping** via client-side shaper, timeline scrubber, play/pause, speed controls ($0.25\times$–$3.0\times$), stroke width, ink palette swatches, and live event stream HUD. |
 
-To view any debugger locally:
+To run the player locally:
 ```bash
-npx vite --port 4173
-# Then open http://localhost:4173/debugger/midad_player.html
+npm run dev
+# Opens http://localhost:5173/debugger/midad_player.html
 ```
 
 ---
@@ -256,15 +267,15 @@ npx vite --port 4173
 
 ```
 midad/
-├── engine/              # TypeScript / Vite / Vitest / Playwright engine
-│   ├── src/             # Core engine: midad.ts, renderer.ts, scheduler.ts, types.ts
-│   ├── tests/           # Vitest and Playwright regression suites
+├── engine/              # TypeScript / Vite / Vitest / Playwright engine (published as 'midad')
+│   ├── src/             # Core engine: midad.ts, renderer.ts, scheduler.ts, shaper.ts, validator.ts, types.ts
+│   ├── tests/           # Vitest unit tests & Playwright regression suites
 │   └── dist/            # Production ES/UMD bundles and packaged fonts
 ├── pipeline/            # Python 3.12 HarfBuzz & skeletonization pipeline
 │   ├── src/             # rules.py, extractor.py, skeletonizer.py, shaper.py, packager.py
 │   └── tests/           # Pytest mathematical invariant test suites
 ├── fixtures/            # Golden fixtures, reference fonts, and character rules
-└── debugger/            # Standalone visual inspection and player web apps
+└── debugger/            # Standalone visual player web application
 ```
 
 ### Running Test Suites
