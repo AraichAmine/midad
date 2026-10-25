@@ -182,14 +182,14 @@ describe('Milestone 6: Midad Public API', () => {
 
     it('accepts single WordData object wrapped into FontData', async () => {
       const container = createMockContainer();
-      const singleWord: WordData = mockSampleFont.words[0];
+      const singleWord: WordData = mockSampleFont.words![0];
       const midad = new Midad(container, singleWord, 'كتب', { autoAnimation: false });
 
       await new Promise<void>((resolve) => {
         midad.ready(() => {
           expect(midad.isReady).toBe(true);
           expect(midad.fontData?.words).toHaveLength(1);
-          expect(midad.fontData?.words[0].text).toBe('كتب');
+          expect(midad.fontData?.words?.[0]?.text).toBe('كتب');
           resolve();
         });
       });
