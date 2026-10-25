@@ -13,3 +13,15 @@ test-results/
 progress.md
 opencode_task.md
 .opencode/
+
+# Visual test artifacts & screenshots
+engine/tests/artifacts/
+
+# Historical milestone visual audits & intermediate SVGs
+debugger/milestone2_audit.html
+debugger/milestone3_joints.html
+debugger/heh_initial_card.svg
+debugger/word_hind_card.svg
+
+# Superseded prototype fixtures
+fixtures/skeletons/prototype_5.json
