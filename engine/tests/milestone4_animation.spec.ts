@@ -22,7 +22,7 @@ const fontData: FontData = JSON.parse(
 
 test.describe('Milestone 4 — Midad API & Web Animation Engine', () => {
   test('Scheduler enforces causal ordering and creates valid bounding boxes', () => {
-    const wordData = fontData.words.find((w) => w.text === 'كتب');
+    const wordData = fontData.words!.find((w) => w.text === 'كتب');
     expect(wordData).toBeDefined();
 
     const scheduled = buildTimeline(wordData!, {

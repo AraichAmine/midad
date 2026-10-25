@@ -119,7 +119,7 @@ test.describe('Milestone 5 — Rendering & Kinematic Timing Engine', () => {
   });
 
   test('Kinematic timing: strictly enforces pen-lift pauses and proportional stroke duration', () => {
-    const wordData = fontData.words.find((w) => w.text === 'كتب');
+    const wordData = fontData.words!.find((w) => w.text === 'كتب');
     expect(wordData).toBeDefined();
 
     const scheduled = buildTimeline(wordData!, {
@@ -249,7 +249,7 @@ test.describe('Milestone 5 — Rendering & Kinematic Timing Engine', () => {
     await page.exposeFunction('getFontData', () => fontData);
 
     for (const wordText of TEST_WORDS_20) {
-      const wordData = fontData.words.find((w) => w.text === wordText);
+      const wordData = fontData.words!.find((w) => w.text === wordText);
       expect(wordData, `Word '${wordText}' must exist in golden words fixture`).toBeDefined();
 
       const renderedWord = await page.evaluate(async (text) => {
