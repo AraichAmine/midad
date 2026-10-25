@@ -144,11 +144,35 @@
   - Pytest (`test_milestone1_topology.py`, `test_milestone2_kinematics.py`, `test_milestone3_welding.py`): **36/36 passed**.
   - Playwright (`milestone4_animation.spec.ts`): **5/5 passed**.
 
+
+### 10. Milestone 5: Rendering & Kinematic Timing Engine (COMPLETE ✅)
+- **Performance Gate (< 12ms compute budget)**:
+  - Headless Chromium animation harness verified at 60 FPS under continuous `requestAnimationFrame` loads.
+  - Mean frame interval: ~16.6 ms with zero script compute freezes ($< 12$ ms compute budget per frame).
+- **Kinematic Calligraphic Timing**:
+  - Proportional stroke timing based on Euclidean arc-length ($\Delta t \propto L$).
+  - Strict pen-lift pauses enforced: $40$ ms intra-PAW pause between baseline and delayed marks; $100$ ms inter-PAW pause between distinct words/PAWs.
+  - Strict temporal causality: parent PAWs complete 100% before delayed dots begin.
+- **Visual Calligraphic Reveal**:
+  - High-precision SVG `stroke-dasharray` and `stroke-dashoffset` reveal to completion ($0.00$ offset).
+  - Authentic calligraphic styling: user-configured stroke-width, ink colors, and line joins.
+- **Cross-Modality Visual Regression**:
+  - Suite: `engine/tests/milestone5_visual.spec.ts`
+  - Automated side-by-side benchmarking against HarfBuzz Noto Naskh Arabic font baseline across 20 canonical Arabic words covering diverse topologies: `كتب`, `محمد`, `جميل`, `صابر`, `خطاط`, `قلم`, `سماء`, `فجر`, `ذهب`, `ورد`, `زهرة`, `كتاب`, `شمس`, `قمر`, `ربيع`, `نهر`, `بحر`, `مصباح`, `مربع`, `نجمة`.
+  - Average structural similarity index (SSIM): **0.6762** (all words $\ge 0.52$).
+  - 40 visual regression screenshot artifacts saved to `engine/tests/artifacts/milestone5_visual/`.
+- **Verification**:
+  - Full Playwright suite (`npx playwright test`): **10/10 passed in 34.4s**.
+  - TypeScript type check (`tsc --noEmit`): **0 errors**.
+  - Production build (`npm run build`): **0 errors** (ES: 27.59 kB / UMD: 19.47 kB).
+  - Python kinematics & welding suite: **24/24 passed in 0.99s**.
+
 ---
 
-## Current Status: Milestone 4 Complete & Ready for Operator Demonstration 🚀
+## Current Status: Milestone 5 Complete & Ready for Operator Demonstration 🚀
+- **Visual Regression Suite**: `engine/tests/milestone5_visual.spec.ts` (10/10 Playwright tests passing)
 - **Interactive Showcase**: `debugger/midad_player.html`
-- **Preview Screenshot**: `midad_player_preview.png`
+- **Visual Comparison Artifacts**: `engine/tests/artifacts/milestone5_visual/` (40 side-by-side images)
 
 ---
 
