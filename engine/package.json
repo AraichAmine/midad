@@ -1,7 +1,7 @@
 {
   "name": "midad",
   "version": "0.1.0",
-  "description": "Open-source Arabic cursive handwriting animation engine modeled after Vara.js",
+  "description": "Open-source Arabic cursive handwriting animation engine",
   "type": "module",
   "main": "./dist/midad.umd.js",
   "module": "./dist/midad.es.js",
@@ -32,7 +32,6 @@
     "handwriting",
     "animation",
     "svg",
-    "vara",
     "rtl",
     "naskh"
   ],

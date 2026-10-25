@@ -1,6 +1,6 @@
 /**
  * Midad — Open-Source Arabic Handwriting Animation Engine
- * Modeled after Vara.js, designed specifically for right-to-left (RTL) cursive
+ * Designed specifically for right-to-left (RTL) cursive
  * script with continuous baseline welding and causal delayed-stroke scheduling.
  *
  * Public API:
@@ -258,7 +258,7 @@ export class Midad {
 
         // Handle queued word progression
         if (eventName === 'complete') {
-          // Also dispatch Vara.js compatible animationEnd event
+          // Dispatch animationEnd event
           this.emit('animationEnd', {
             wordIndex: index,
             wordText: textSpec?.text,
@@ -317,14 +317,14 @@ export class Midad {
   }
 
   /**
-   * Vara.js-compatible helper: register ready callback.
+   * Helper: register ready callback.
    */
   public ready(handler: (data?: any) => void): this {
     return this.on('ready', handler);
   }
 
   /**
-   * Vara.js-compatible helper: register animation complete/end callback.
+   * Helper: register animation complete/end callback.
    */
   public animationEnd(handler: (wordIndex: number, textSpec?: MidadTextSpec) => void): this {
     return this.on('animationEnd', (data) => {

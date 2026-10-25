@@ -1,12 +1,12 @@
 /**
  * MILESTONE 6: Public API & Font Packaging Verification Suite
  *
- * Verifies Vara.js-compatible API semantics:
+ * Verifies Midad API semantics:
  * 1. Constructor container resolution, default options merging.
  * 2. In-memory FontData, single WordData, and JSON loading.
  * 3. Text specification parsing & queue normalization.
  * 4. Playback controls (play, pause, resume, restart, reset, seek, state, get).
- * 5. Vara.js callback helpers (ready, animationEnd) and Event Emitter (on, once, off).
+ * 5. Callback helpers (ready, animationEnd) and Event Emitter (on, once, off).
  * 6. BiDi fallback & graceful error recovery for missing words or non-Arabic characters.
  * 7. Distribution size gates (< 25 KB gzipped engine bundle, < 95 KB gzipped font JSON).
  */
@@ -214,7 +214,7 @@ describe('Milestone 6: Midad Public API', () => {
     });
   });
 
-  describe('Vara.js-Compatible Playback Controls & Methods', () => {
+  describe('Playback Controls & Methods', () => {
     it('implements play, pause, resume, reset, restart, seek, and state', async () => {
       const container = createMockContainer();
       const midad = new Midad(container, mockSampleFont, 'كتب', { autoAnimation: false });
@@ -265,7 +265,7 @@ describe('Milestone 6: Midad Public API', () => {
     });
   });
 
-  describe('Event Emitter & Vara.js Callbacks', () => {
+  describe('Event Emitter & Callbacks', () => {
     it('fires ready and allows .ready(callback) registration', async () => {
       const container = createMockContainer();
       const midad = new Midad(container, mockSampleFont, 'كتب', { autoAnimation: false });

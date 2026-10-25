@@ -6,7 +6,7 @@
 
 ## 1. Project Mission & Core Architecture
 
-Midad is an open-source Arabic handwriting animation engine modeled after Vara.js, designed specifically for cursive right-to-left (RTL) script with continuous baseline welding across Pieces of Arabic Words (PAWs) and causal delayed rendering of dots and vocalizations (*i'jam* and *tashkeel*).
+Midad is an open-source Arabic handwriting animation engine designed specifically for cursive right-to-left (RTL) script with continuous baseline welding across Pieces of Arabic Words (PAWs) and causal delayed rendering of dots and vocalizations (*i'jam* and *tashkeel*).
 
 ### Monorepo Structure:
 - `engine/`: TypeScript / Vite / Vitest / Playwright runtime engine. This is published to npm as `midad`.

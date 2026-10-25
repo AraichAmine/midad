@@ -521,7 +521,7 @@ def generate_player_html():
     </div>
     <div class="header-badges">
       <span class="badge emerald">✓ Continuous C0/G1 Welds</span>
-      <span class="badge">Vara.js API Ready</span>
+      <span class="badge">Midad API Ready</span>
       <span class="badge">50 Words Corpus</span>
     </div>
   </header>

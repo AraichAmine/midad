@@ -10,7 +10,7 @@
 ![Font Size](https://img.shields.io/badge/packaged_font-%3C%2027.3%20KB%20gzipped-brightgreen)
 ![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
 
-**An open-source handwriting animation engine modeled after Vara.js, designed specifically for Arabic cursive script.**
+**An open-source handwriting animation engine designed specifically for Arabic cursive script.**
 
 [Features](#key-features) •
 [Quick Start](#quick-start) •
@@ -32,7 +32,7 @@ Arabic script presents unique mathematical challenges for animated handwriting e
 
 **Midad** solves these challenges with a dual-pipeline architecture:
 1. **Python Pipeline**: HarfBuzz glyph extraction, medial-axis skeletonization, calligraphic ductus ordering, cubic baseline welding, and RDP packaging.
-2. **TypeScript Web Engine**: High-performance SVG `stroke-dasharray` / `stroke-dashoffset` rendering, Vara.js-compatible API, causal timeline scheduling, and zero external runtime dependencies.
+2. **TypeScript Web Engine**: High-performance SVG `stroke-dasharray` / `stroke-dashoffset` rendering, rich animation API, causal timeline scheduling, and zero external runtime dependencies.
 
 ---
 
@@ -50,8 +50,8 @@ Arabic script presents unique mathematical challenges for animated handwriting e
   - Baseline trunk draws first.
   - Delayed strokes (dots, hamza, madda, kaf mark) animate in sequence based on their baseline attachment parameter $s_{\text{attach}}$.
   - Calibrated pen-lift pauses between strokes ($40\text{ ms}$) and PAWs ($100\text{ ms}$).
-- **Vara.js-Compatible API**:
-  - Direct drop-in compatibility with familiar Vara.js semantics: `new Midad(selector, font, texts, options)`.
+- **Expressive & Intuitive API**:
+  - Declarative configuration: `new Midad(selector, font, texts, options)`.
   - Methods: `play()`, `pause()`, `resume()`, `restart()`, `reset()`, `seek(progress)`, `get(index)`.
   - Callbacks & Events: `ready(cb)`, `animationEnd(cb)`, `.on()`, `.once()`, `.off()`.
 - **Ultra-Lightweight Production Distribution**:
@@ -182,7 +182,7 @@ interface MidadTextSpec {
 #### Events & Callbacks
 
 ```typescript
-// Vara.js compatible convenience helpers:
+// Convenience callback helpers:
 midad.ready((data) => { /* Font loaded & parsed */ });
 midad.animationEnd((wordIndex, textSpec) => { /* Word animation finished */ });
 
@@ -228,7 +228,7 @@ midad.on('warning', ({ code, message }) => {});
                 │        Midad TypeScript Animation Engine      │
                 │  - Causal timeline scheduler                  │
                 │  - 60 FPS requestAnimationFrame renderer      │
-                │  - Vara.js-compatible public API             │
+                │  - Rich, event-driven public API              │
                 └───────────────────────────────────────────────┘
 ```
 

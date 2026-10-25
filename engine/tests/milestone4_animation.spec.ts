@@ -20,7 +20,7 @@ const fontData: FontData = JSON.parse(
   readFileSync(goldenWordsPath, { encoding: 'utf-8' }),
 );
 
-test.describe('Milestone 4 — Vara.js API & Web Animation Engine', () => {
+test.describe('Milestone 4 — Midad API & Web Animation Engine', () => {
   test('Scheduler enforces causal ordering and creates valid bounding boxes', () => {
     const wordData = fontData.words.find((w) => w.text === 'كتب');
     expect(wordData).toBeDefined();
